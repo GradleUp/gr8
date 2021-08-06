@@ -17,6 +17,67 @@ As a nice bonus, it makes plugins standalone so consumers of your plugin don't n
 
 ## Usage
 
+To make a shadowed Gradle plugin:
+
+```kotlin
+plugins {
+  id("org.jetbrains.kotlin.jvm").version("$kotlinVersion")
+  id("java-gradle-plugin")
+  id("com.gradleup.gr8").version("$gr8Version")
+}
+
+// Configuration dependencies that will be shadowed
+val shadeConfiguration = configurations.create("shade")
+
+dependencies {
+  // Using a redistributed version of Gradle instead of `gradleApi` provides more flexibility
+  // See https://github.com/gradle/gradle/issues/1835
+  compileOnly("dev.gradleplugins:gradle-api:7.1.1")
+
+  // Also set kotlin.stdlib.default.dependency=false in gradle.properties to avoid the 
+  // plugin to add it to the "api" configuration
+  add("shade", "org.jetbrains.kotlin:kotlin-stdlib")
+  add("shade", "com.squareup.okhttp3:okhttp:4.9.0")
+}
+
+gr8 {
+  val shadowedJar = create("gr8") {
+    proguardFile("rules.pro")
+    configuration("shade")
+  }
+  // Replace the regular jar with the shadowed one in the publication
+  replaceOutgoingJar(shadowedJar)
+
+  // Make the shadowed dependencies available during compilation/tests
+  configurations.named("compileOnly").configure {
+    extendsFrom(shadeConfiguration)
+  }
+  configurations.named("testImplementation").configure {
+    extendsFrom(shadeConfiguration)
+  }
+}
+```
+
+Then customize your proguard rules. The below is the bare minimum. If you're using reflection, you might need more rules 
+
+```
+# The Gradle API jar isn't added to the classpath, ignore the missing symbols
+-ignorewarnings
+# Allow to make some classes public so that we can repackage them without breaking package-private members
+-allowaccessmodification
+
+# Keep kotlin metadata so that the Kotlin compiler knows about top level functions and other things
+-keep class kotlin.Metadata { *; }
+
+# We need to keep type arguments (Signature) for Gradle to be able to instantiate abstract models like `Property`
+-keepattributes Signature,Exceptions,*Annotation*,InnerClasses,PermittedSubclasses,EnclosingMethod,Deprecated,SourceFile,LineNumberTable
+
+# Keep your public API so that it's callable from scripts
+-keep class com.example.** { *; }
+
+-repackageclasses com.example.relocated
+
+```
 
 ## FAQ
 
@@ -26,6 +87,7 @@ The [Gradle Shadow Plugin](https://imperceptiblethoughts.com/shadow/) has been [
 
 ```kotlin
 project.extensions.getByName("kotlin")
+}
 ```
 
 will be transformed to:
@@ -34,7 +96,7 @@ will be transformed to:
 project.extensions.getByName("com.relocated.kotlin")
 ```
 
-For plugins that generate source code and contain a lot of package names, this might be even more imprevisible and require weird [workarounds](https://github.com/apollographql/apollo-android/blob/f72c3afd17655591aca90a6a118dbb7be9c50920/apollo-compiler/src/main/kotlin/com/apollographql/apollo/compiler/codegen/kotlin/OkioJavaTypeName.kt#L19).
+For plugins that generate source code and contain a lot of package names, this might be even more unpredictable and require weird [workarounds](https://github.com/apollographql/apollo-android/blob/f72c3afd17655591aca90a6a118dbb7be9c50920/apollo-compiler/src/main/kotlin/com/apollographql/apollo/compiler/codegen/kotlin/OkioJavaTypeName.kt#L19).
 
 By using `R8` and [proguard rules](https://www.guardsquare.com/manual/configuration/usage), `Gr8` makes relocation more predictable and configurable.
 
