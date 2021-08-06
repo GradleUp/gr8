@@ -1,0 +1,4 @@
+pluginManagement {
+  repositories {
+  }
+}
