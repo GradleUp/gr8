@@ -7,31 +7,56 @@ import com.android.tools.r8.R8
 import com.android.tools.r8.R8Command
 import kotlinx.metadata.jvm.jvmInternalName
 import org.gradle.api.DefaultTask
-import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.file.FileTree
-import org.gradle.api.file.FileVisitDetails
-import org.gradle.api.file.FileVisitor
-import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.file.*
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.internal.jvm.Jvm
+import java.io.File
 
 abstract class Gr8Task : DefaultTask() {
   @get:InputFiles
-  abstract val programFiles: ConfigurableFileCollection
+  internal abstract val programFiles: ConfigurableFileCollection
 
   @get:InputFiles
-  abstract val classPathFiles: ConfigurableFileCollection
+  internal abstract val classPathFiles: ConfigurableFileCollection
 
   @get:OutputFile
-  abstract val output: RegularFileProperty
+  internal abstract val outputJar: RegularFileProperty
 
   @get:OutputFile
-  abstract val mapping: RegularFileProperty
+  internal abstract val mapping: RegularFileProperty
 
   @get:InputFiles
-  abstract val proguardConfigurationFiles: ConfigurableFileCollection
+  internal abstract val proguardConfigurationFiles: ConfigurableFileCollection
+
+  fun programFiles(any: Any) {
+    programFiles.from(any)
+    programFiles.disallowChanges()
+  }
+
+  fun classPathFiles(any: Any) {
+    classPathFiles.from(any)
+    classPathFiles.disallowChanges()
+  }
+
+  fun outputJar(file: File) {
+    outputJar.set(file)
+    outputJar.disallowChanges()
+  }
+
+  fun mapping(file: File) {
+    mapping.set(file)
+    mapping.disallowChanges()
+  }
+
+  fun outputJar(): Provider<RegularFile> = outputJar
+
+  fun proguardConfigurationFiles(any: Any) {
+    proguardConfigurationFiles.from(any)
+    proguardConfigurationFiles.disallowChanges()
+  }
 
   @OptIn(ExperimentalStdlibApi::class)
   private fun FileTree.paths(): List<String> {
@@ -60,7 +85,7 @@ abstract class Gr8Task : DefaultTask() {
           }
         }
         .addLibraryResourceProvider(JdkClassFileProvider.fromJdkHome(Jvm.current().javaHome.toPath()))
-        .setOutput(output.asFile.get().toPath(), OutputMode.ClassFile)
+        .setOutput(outputJar.asFile.get().toPath(), OutputMode.ClassFile)
         .addProguardConfigurationFiles(proguardConfigurationFiles.files.map { it.toPath() })
         .build()
     R8.run(r8command)

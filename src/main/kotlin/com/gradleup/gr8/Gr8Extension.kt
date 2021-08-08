@@ -6,13 +6,10 @@ import org.gradle.api.attributes.Bundling
 import org.gradle.api.attributes.Category
 import org.gradle.api.attributes.LibraryElements
 import org.gradle.api.attributes.Usage
-import org.gradle.api.attributes.java.TargetJvmVersion
 import org.gradle.api.component.AdhocComponentWithVariants
-import org.gradle.api.component.SoftwareComponentFactory
 import org.gradle.api.file.RegularFile
 import org.gradle.api.internal.artifacts.dependencies.DefaultSelfResolvingDependency
 import org.gradle.api.provider.Provider
-import java.io.File
 
 open class Gr8Extension(
   private val project: Project,
@@ -33,7 +30,7 @@ open class Gr8Extension(
 
     action.execute(configurator)
 
-    return configurator.registerTask()
+    return configurator.registerTasks()
   }
 
   /**

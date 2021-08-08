@@ -45,6 +45,7 @@ configure<com.gradleup.gr8.Gr8Extension> {
   val shadowedJar = create("gr8") {
     proguardFile("rules.pro")
     configuration("runtimeClasspath")
+    workaroundDefaultConstructorMarker(true)
   }
 
   addShadowedVariant(shadowedJar)

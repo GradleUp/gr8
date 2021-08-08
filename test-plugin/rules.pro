@@ -18,7 +18,7 @@
     public static **[] values();
 }
 
-# Keep everything Apollo it's being used from KotlinPoet and also because it shouldn't conflict
+# Keep everything com.gradleup.** as it's being used from Gradle
 -keep class com.gradleup.** { *; }
 
 # Allow to make some classes public so that we can repackage them without breaking package-private members

@@ -1,9 +1,11 @@
 package com.gradleup.gr8
 
+import com.gradleup.gr8.PatchStdlibTask.Companion.isKotlinStdlib
+import com.gradleup.gr8.StripGradleApiTask.Companion.isGradleApi
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.RegularFile
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
@@ -17,9 +19,14 @@ open class Gr8Configurator(
 ) {
   private var programJar: Property<Any> = project.objects.property(Any::class.java)
   private var configuration: Property<String> = project.objects.property(String::class.java)
+  private var archiveName: Property<String> = project.objects.property(String::class.java)
   private var classPathConfiguration: Property<String> = project.objects.property(String::class.java)
   private var proguardFiles = mutableListOf<Any>()
-  private var classifier: Property<String> = project.objects.property(String::class.java)
+  private var workaroundDefaultConstructorMarker: Property<Boolean> = project.objects.property(Boolean::class.java)
+  private var stripGradleApi: Property<Boolean> = project.objects.property(Boolean::class.java)
+  private var excludes: ListProperty<String> = project.objects.listProperty(String::class.java)
+
+  private val buildDir = project.layout.buildDirectory.dir("gr8/$name").get().asFile
 
   /**
    * The configuration to include in the resulting output jar.
@@ -30,15 +37,12 @@ open class Gr8Configurator(
   }
 
   /**
-   * The classifier to use for the output jar.
-   *
-   * Default: "shadowed"
+   * The configuration to include in the resulting output jar.
    */
-  fun classifier(name: String) {
-    classifier.set(name)
-    classifier.disallowChanges()
+  fun archiveName(name: String) {
+    archiveName.set(name)
+    archiveName.disallowChanges()
   }
-
 
   /**
    * The jar file to include in the resulting output jar.
@@ -105,6 +109,18 @@ open class Gr8Configurator(
     proguardFiles.addAll(file)
   }
 
+  fun workaroundDefaultConstructorMarker(workaround: Boolean) {
+    workaroundDefaultConstructorMarker.set(workaround)
+  }
+
+  fun stripGradleApi(strip: Boolean) {
+    stripGradleApi.set(strip)
+  }
+
+  fun exclude(exclude: String) {
+    this.excludes.add(exclude)
+  }
+
   private fun defaultProgramJar(): Provider<File> {
     return project.tasks.named("jar").flatMap {
       (it as Jar).archiveFile
@@ -113,54 +129,76 @@ open class Gr8Configurator(
     }
   }
 
-  private fun Jar.fromJarProvider(jarProvider: Provider<File>) {
-    from(jarProvider.map { project.zipTree(it) })
-  }
+  internal fun registerTasks(): Provider<RegularFile> {
+    /**
+     * The pipeline is:
+     * - Patch the Kotlin stdlib to make DefaultConstructorMarker not-public again. This is to prevent R8 to rewrite
+     * Class.forName("kotlin.jvm.internal.DefaultConstructorMarker") to a constant pool reference that will make a runtime
+     * exception if used with Kotlin 1.4 at runtime
+     * - Take all jars and build a big embedded Jar, keeping all META-INF files and only the MANIFEST from the main jar
+     * - Strip some Java9 files from gradle-api because it triggers
+     * com.android.tools.r8.errors.CompilationError: Class content provided for type descriptor org.gradle.internal.impldep.META-INF.versions.9.org.junit.platform.commons.util.ModuleUtils actually defines class org.gradle.internal.impldep.org.junit.platform.commons.util.ModuleUtils
+     * - Call R8 to generate the final jar
+     */
 
-  private fun Jar.fromConfiguration(configuration: Configuration) {
-    from(
-        project.provider {
-          configuration.map { project.zipTree(it) }
+    val otherJars = project.files()
+    val configuration = project.configurations.getByName(configuration.orNull
+        ?: error("shadeConfiguration is mandatory"))
+
+    val patchStdlib = workaroundDefaultConstructorMarker.getOrElse(true)
+    otherJars.from(configuration.filter {
+      !patchStdlib || !isKotlinStdlib(it.name)
+    })
+
+    if (patchStdlib) {
+      val patchStdlibTask = project.tasks.register("${name}PatchStdlib", PatchStdlibTask::class.java) {
+        it.stdlibJar(configuration)
+        it.patchedStdlibJar(buildDir.resolve("kotlin-stdlib-patched.jar"))
+      }
+
+      otherJars.from(patchStdlibTask.flatMap { it.patchedStdlibJar() })
+    } else {
+      otherJars.from(configuration.filter { isKotlinStdlib(it.name) })
+    }
+
+    val embeddedJarProvider = project.tasks.register("${name}EmbeddedJar", EmbeddedJarTask::class.java) { task ->
+      task.excludes.set(excludes)
+      task.mainJar(programJar.map { project.file(it) }.orElse(defaultProgramJar()))
+      task.otherJars(otherJars)
+      task.outputJar(buildDir.resolve("embedded.jar"))
+    }
+
+    val classPathFiles = project.files()
+    if (classPathConfiguration.isPresent) {
+      val stripGradleApi = stripGradleApi.getOrElse(true)
+
+      val classPathConfiguration = project.configurations.getByName(classPathConfiguration.get())
+      classPathFiles.from(classPathConfiguration.filter {
+        !stripGradleApi || !isGradleApi(it.name)
+      })
+
+      if (stripGradleApi) {
+        val stripGradleApiTask = project.tasks.register("${name}StripGradleApi", StripGradleApiTask::class.java) {
+          it.gradleApiJar(classPathConfiguration)
+          it.strippedGradleApiJar(buildDir.resolve("gradle-api-stripped.jar"))
         }
-    ) {
-      // This creates duplicates
-      it.excludes.add("META-INF/versions/9/module-info.class")
-    }
-  }
-
-  internal fun registerTask(): Provider<RegularFile> {
-    val buildDir = project.layout.buildDirectory.dir("gr8/$name").get().asFile
-
-    val fatJarTaskProvider = project.tasks.register("${name}EmbeddedJar", Jar::class.java) { task ->
-      val jarProvider = programJar.map { project.file(it) }.orElse(defaultProgramJar())
-      task.fromJarProvider(jarProvider)
-      task.fromConfiguration(project.configurations.getByName(configuration.orNull ?: error("shadeConfiguration is mandatory")))
-
-      task.manifest {
-        it.from(jarProvider.map { project.zipTree(it).first { it.name == "MANIFEST.MF" } })
+        classPathFiles.from(stripGradleApiTask.flatMap { it.strippedGradleApiJar() })
+      } else {
+        classPathFiles.from(classPathConfiguration.filter { isGradleApi(it.name) })
       }
-
-      task.destinationDirectory.set(buildDir)
-      task.archiveClassifier.set("embedded")
     }
 
-    val gr8TaskProvider = project.tasks.register("${name}Gr8Jar", Gr8Task::class.java) { task ->
-      task.programFiles.from(fatJarTaskProvider.flatMap { it.archiveFile })
+    val r8TaskProvider = project.tasks.register("${name}R8Jar", Gr8Task::class.java) { task ->
+      task.programFiles(embeddedJarProvider.flatMap { it.outputJar() })
 
-      task.mapping.set(File(buildDir, "mapping.txt"))
-      if (classPathConfiguration.isPresent) {
-        task.classPathFiles.from(project.configurations.getByName(classPathConfiguration.get()))
-      }
-      task.output.set(File(buildDir, "r8-output.jar"))
+      task.mapping(File(buildDir, "mapping.txt"))
+      task.classPathFiles(classPathFiles)
+
+      val archiveName = archiveName.getOrElse("${project.name}-${project.version}-shadowed.jar")
+      task.outputJar(File(buildDir, archiveName))
       task.proguardConfigurationFiles.from(proguardFiles.toTypedArray())
     }
 
-    val shadowed = project.tasks.register("${name}ShadowedJar", Jar::class.java) { task ->
-      task.destinationDirectory.set(buildDir)
-      task.archiveClassifier.set(classifier.getOrElse("shadowed"))
-      task.from(gr8TaskProvider.flatMap { it.output.asFile.map { project.zipTree(it) } })
-    }
-
-    return shadowed.flatMap { it.archiveFile }
+    return r8TaskProvider.flatMap { it.outputJar() }
   }
 }
