@@ -37,6 +37,7 @@ configurations.getByName("compileOnly").extendsFrom(shadeConfiguration)
 gr8 {
   val shadowedJar = create("plugin") {
     configuration("shade")
+    proguardFile("rules.pro")
   }
 
   removeGradleApiFromApi()
