@@ -148,7 +148,7 @@ open class Gr8Configurator(
 
     val classPathFiles = project.files()
     if (classPathConfiguration.isPresent) {
-      val stripGradleApi = stripGradleApi.getOrElse(true)
+      val stripGradleApi = stripGradleApi.getOrElse(false)
 
       val classPathConfiguration = project.configurations.getByName(classPathConfiguration.get())
       classPathFiles.from(classPathConfiguration.filter {
