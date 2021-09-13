@@ -71,8 +71,8 @@ fun Project.getOssStagingUrl(): String {
     return url
   }
   val client = net.mbonnin.vespene.lib.NexusStagingClient(
-      username = System.getenv("SONATYPE_NEXUS_USERNAME"),
-      password = System.getenv("SONATYPE_NEXUS_PASSWORD"),
+      username = System.getenv("OSSRH_USER"),
+      password = System.getenv("OSSRH_PASSWORD"),
   )
   val repositoryId = kotlinx.coroutines.runBlocking {
     client.createRepository(
