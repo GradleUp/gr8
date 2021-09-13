@@ -111,8 +111,8 @@ publishing {
       name = "ossSnapshots"
       url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
       credentials {
-        username = System.getenv("SONATYPE_NEXUS_USERNAME")
-        password = System.getenv("SONATYPE_NEXUS_PASSWORD")
+        username = System.getenv("OSSRH_USER")
+        password = System.getenv("OSSRH_PASSWORD")
       }
     }
 
@@ -122,8 +122,8 @@ publishing {
         uri(rootProject.getOssStagingUrl())
       }
       credentials {
-        username = System.getenv("SONATYPE_NEXUS_USERNAME")
-        password = System.getenv("SONATYPE_NEXUS_PASSWORD")
+        username = System.getenv("OSSRH_USER")
+        password = System.getenv("OSSRH_PASSWORD")
       }
     }
   }
@@ -175,15 +175,29 @@ fun Project.setDefaultPomFields(mavenPublication: MavenPublication) {
 signing {
   // GPG_PRIVATE_KEY should contain the armoured private key that starts with -----BEGIN PGP PRIVATE KEY BLOCK-----
   // It can be obtained with gpg --armour --export-secret-keys KEY_ID
-  useInMemoryPgpKeys(System.getenv("GPG_PRIVATE_KEY"), System.getenv("GPG_PRIVATE_KEY_PASSWORD"))
+  useInMemoryPgpKeys(System.getenv("GPG_KEY"), System.getenv("GPG_KEY_PASSWORD"))
   sign(publishing.publications)
 }
 
 tasks.withType(Sign::class.java).configureEach {
-  isEnabled = !System.getenv("GPG_PRIVATE_KEY").isNullOrBlank()
+  isEnabled = !System.getenv("GPG_KEY").isNullOrBlank()
 }
 
 java {
   sourceCompatibility = JavaVersion.VERSION_1_8
   targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+fun isTag(): Boolean {
+  val ref = System.getenv("GITHUB_REF")
+
+  return ref?.startsWith("refs/tags/") == true
+}
+
+tasks.register("ci") {
+  dependsOn("build")
+  if (isTag()) {
+    dependsOn("publishAllPublicationsToOssStagingRepository")
+    dependsOn("publishPlugins")
+  }
 }
