@@ -27,3 +27,4 @@ jobs:
           OSSRH_USER: ${{ secrets.OSSRH_USER }}
           GPG_KEY: ${{ secrets.GPG_KEY }}
           GPG_KEY_PASSWORD: ${{ secrets.GPG_KEY_PASSWORD }}
+          COM_GRADLEUP_PROFILE_ID: ${{ secrets.COM_GRADLEUP_PROFILE_ID }}
