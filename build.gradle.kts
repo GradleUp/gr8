@@ -27,9 +27,6 @@ version = "0.1"
 dependencies {
   compileOnly(gradleApi())
   implementation("net.mbonnin.r8:r8:3.0.65")
-  implementation("org.ow2.asm:asm:9.2") {
-    because("needed to patch the DefaultConstructorMarker annotation")
-  }
 }
 
 pluginBundle {

@@ -1,6 +1,5 @@
 package com.gradleup.gr8
 
-import com.gradleup.gr8.PatchStdlibTask.Companion.isKotlinStdlib
 import com.gradleup.gr8.StripGradleApiTask.Companion.isGradleApi
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -22,7 +21,6 @@ open class Gr8Configurator(
   private var archiveName: Property<String> = project.objects.property(String::class.java)
   private var classPathConfiguration: Property<String> = project.objects.property(String::class.java)
   private var proguardFiles = mutableListOf<Any>()
-  private var workaroundDefaultConstructorMarker: Property<Boolean> = project.objects.property(Boolean::class.java)
   private var stripGradleApi: Property<Boolean> = project.objects.property(Boolean::class.java)
   private var excludes: ListProperty<String> = project.objects.listProperty(String::class.java)
 
@@ -109,10 +107,6 @@ open class Gr8Configurator(
     proguardFiles.addAll(file)
   }
 
-  fun workaroundDefaultConstructorMarker(workaround: Boolean) {
-    workaroundDefaultConstructorMarker.set(workaround)
-  }
-
   fun stripGradleApi(strip: Boolean) {
     stripGradleApi.set(strip)
   }
@@ -145,26 +139,10 @@ open class Gr8Configurator(
     val configuration = project.configurations.getByName(configuration.orNull
         ?: error("shadeConfiguration is mandatory"))
 
-    val patchStdlib = workaroundDefaultConstructorMarker.getOrElse(true)
-    otherJars.from(configuration.filter {
-      !patchStdlib || !isKotlinStdlib(it.name)
-    })
-
-    if (patchStdlib) {
-      val patchStdlibTask = project.tasks.register("${name}PatchStdlib", PatchStdlibTask::class.java) {
-        it.stdlibJar(configuration)
-        it.patchedStdlibJar(buildDir.resolve("kotlin-stdlib-patched.jar"))
-      }
-
-      otherJars.from(patchStdlibTask.flatMap { it.patchedStdlibJar() })
-    } else {
-      otherJars.from(configuration.filter { isKotlinStdlib(it.name) })
-    }
-
     val embeddedJarProvider = project.tasks.register("${name}EmbeddedJar", EmbeddedJarTask::class.java) { task ->
       task.excludes.set(excludes)
       task.mainJar(programJar.map { project.file(it) }.orElse(defaultProgramJar()))
-      task.otherJars(otherJars)
+      task.otherJars(configuration)
       task.outputJar(buildDir.resolve("embedded.jar"))
     }
 
