@@ -21,7 +21,7 @@ repositories {
   google()
 }
 
-group = "com.gradleup.gr8"
+group = "com.gradleup"
 version = "0.1"
 
 dependencies {
@@ -125,6 +125,7 @@ publishing {
 fun Project.setDefaultPomFields(mavenPublication: MavenPublication) {
   mavenPublication.groupId = group.toString()
   mavenPublication.version = version.toString()
+  mavenPublication.artifactId = "gr8-plugin"
 
   mavenPublication.pom {
     name.set("Gr8 plugin")
