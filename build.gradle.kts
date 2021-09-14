@@ -198,6 +198,6 @@ tasks.register("ci") {
   dependsOn("build")
   if (isTag()) {
     dependsOn("publishAllPublicationsToOssStagingRepository")
-    dependsOn("publishPlugins")
+    //dependsOn("publishPlugins")
   }
 }
