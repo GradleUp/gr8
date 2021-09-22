@@ -23,7 +23,7 @@ repositories {
 }
 
 group = "com.gradleup"
-version = "0.2"
+version = "0.3"
 
 val shadeConfiguration = configurations.create("shade")
 
@@ -198,6 +198,6 @@ tasks.register("ci") {
   dependsOn("build")
   if (isTag()) {
     dependsOn("publishAllPublicationsToOssStagingRepository")
-    //dependsOn("publishPlugins")
+    dependsOn("publishPlugins")
   }
 }
