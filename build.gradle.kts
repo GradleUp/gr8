@@ -25,6 +25,9 @@ repositories {
 group = "com.gradleup"
 version = "0.3"
 
+project.extra.set("gradle.publish.key", System.getenv("GRADLE_KEY"))
+project.extra.set("gradle.publish.secret", System.getenv("GRADLE_SECRET"))
+
 val shadeConfiguration = configurations.create("shade")
 
 dependencies {

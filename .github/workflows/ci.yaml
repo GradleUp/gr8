@@ -19,7 +19,7 @@ jobs:
       - name: Checkout the repo
         uses: actions/checkout@v2
       - name: Run the CI task
-        run: ./gradlew ci -Pgradle.publish.key="$GRADLE_KEY" -Pgradle.publish.secret="$GRADLE_SECRET"
+        run: ./gradlew ci 
         env:
           GRADLE_KEY: ${{ secrets.GRADLE_KEY }}
           GRADLE_SECRET: ${{ secrets.GRADLE_SECRET }}
