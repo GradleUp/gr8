@@ -14,7 +14,7 @@ plugins {
   id("signing")
   id("org.jetbrains.kotlin.jvm").version("1.5.21")
   id("com.gradle.plugin-publish").version("0.15.0")
-  id("com.gradleup.gr8").version("0.1")
+  id("com.gradleup.gr8").version("0.3")
 }
 
 repositories {
@@ -23,7 +23,7 @@ repositories {
 }
 
 group = "com.gradleup"
-version = "0.3"
+version = "0.4"
 
 project.extra.set("gradle.publish.key", System.getenv("GRADLE_KEY"))
 project.extra.set("gradle.publish.secret", System.getenv("GRADLE_SECRET"))
@@ -32,19 +32,25 @@ val shadeConfiguration = configurations.create("shade")
 
 dependencies {
   compileOnly(gradleApi())
-  add("shade", "net.mbonnin.r8:r8:3.0.65")
+  add("shade", "net.mbonnin.r8:r8:3.2.49")
 }
 
 configurations.getByName("compileOnly").extendsFrom(shadeConfiguration)
 
-gr8 {
-  val shadowedJar = create("plugin") {
-    configuration("shade")
-    proguardFile("rules.pro")
-  }
+if (true) {
+  gr8 {
+    val shadowedJar = create("plugin") {
+      configuration("shade")
+      proguardFile("rules.pro")
+    }
 
-  removeGradleApiFromApi()
-  replaceOutgoingJar(shadowedJar)
+    removeGradleApiFromApi()
+    replaceOutgoingJar(shadowedJar)
+  }
+} else {
+  configurations.named("implementation").configure {
+    extendsFrom(shadeConfiguration)
+  }
 }
 
 pluginBundle {

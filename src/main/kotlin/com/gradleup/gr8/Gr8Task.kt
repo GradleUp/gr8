@@ -84,7 +84,11 @@ abstract class Gr8Task : DefaultTask() {
             setProguardMapOutputPath(mapping.get().asFile.toPath())
           }
         }
-        .addLibraryResourceProvider(JdkClassFileProvider.fromJdkHome(Jvm.current().javaHome.toPath()))
+      /**
+       * We might need an option to override that as if you're running newer versions of Java to run the task
+       * R8/asm might fail reading this while the target classes might very well be readable
+       */
+      .addLibraryResourceProvider(JdkClassFileProvider.fromJdkHome(Jvm.current().javaHome.toPath()))
         .setOutput(outputJar.asFile.get().toPath(), OutputMode.ClassFile)
         .addProguardConfigurationFiles(proguardConfigurationFiles.files.map { it.toPath() })
         .build()
