@@ -10,16 +10,15 @@ on:
       - 'docs/**'
       - '*.md'
 
-
 jobs:
   ci:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout the repo
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - uses: gradle/gradle-build-action@v2
       - name: Run the CI task
-        run: ./gradlew ci 
+        run: ./gradlew ci
         env:
           GRADLE_KEY: ${{ secrets.GRADLE_KEY }}
           GRADLE_SECRET: ${{ secrets.GRADLE_SECRET }}
