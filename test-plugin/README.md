@@ -1,0 +1,1 @@
+A test plugin that uses gr8 to relocate itself

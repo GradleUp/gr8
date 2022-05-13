@@ -107,6 +107,13 @@ open class Gr8Configurator(
     proguardFiles.addAll(file)
   }
 
+  /**
+   * The gradle-api jar triggers errors in R8
+   *
+   * Class content provided for type descriptor org.gradle.internal.impldep.META-INF.versions.9.org.junit.platform.commons.util.ModuleUtils$ModuleReferenceScanner actually defines class org.gradle.internal.impldep.org.junit.platform.commons.util.ModuleUtils$ModuleReferenceScanner
+   *
+   * Setting stripGradleApi(true) will strip these classes
+   */
   fun stripGradleApi(strip: Boolean) {
     stripGradleApi.set(strip)
   }
@@ -123,7 +130,7 @@ open class Gr8Configurator(
     }
   }
 
-  internal fun registerTasks(): Provider<RegularFile> {
+  internal fun registerTasks(): TaskProvider<Gr8Task> {
     /**
      * The pipeline is:
      * - Patch the Kotlin stdlib to make DefaultConstructorMarker not-public again. This is to prevent R8 to rewrite
@@ -135,7 +142,6 @@ open class Gr8Configurator(
      * - Call R8 to generate the final jar
      */
 
-    val otherJars = project.files()
     val configuration = project.configurations.getByName(configuration.orNull
         ?: error("shadeConfiguration is mandatory"))
 
@@ -177,6 +183,6 @@ open class Gr8Configurator(
       task.proguardConfigurationFiles.from(proguardFiles.toTypedArray())
     }
 
-    return r8TaskProvider.flatMap { it.outputJar() }
+    return r8TaskProvider
   }
 }

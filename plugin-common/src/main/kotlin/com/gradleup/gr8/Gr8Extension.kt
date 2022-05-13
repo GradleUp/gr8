@@ -10,6 +10,8 @@ import org.gradle.api.component.AdhocComponentWithVariants
 import org.gradle.api.file.RegularFile
 import org.gradle.api.internal.artifacts.dependencies.DefaultSelfResolvingDependency
 import org.gradle.api.provider.Provider
+import org.gradle.api.publish.PublishingExtension
+import org.gradle.api.publish.maven.MavenPublication
 
 open class Gr8Extension(
   private val project: Project,
@@ -30,7 +32,20 @@ open class Gr8Extension(
 
     action.execute(configurator)
 
-    return configurator.registerTasks()
+    val provider = configurator.registerTasks()
+
+    project.plugins.withId("maven-publish") {
+      project.extensions.findByType(PublishingExtension::class.java)?.apply {
+        publications.withType(MavenPublication::class.java).configureEach {
+          if (!name.lowercase().contains("marker")) {
+            it.artifact(provider.flatMap { it.mapping }) {
+              it.classifier = "mapping"
+            }
+          }
+        }
+      }
+    }
+    return provider.flatMap { it.outputJar() }
   }
 
   /**
