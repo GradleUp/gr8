@@ -17,3 +17,7 @@ java {
 dependencies {
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib") // let the Gradle plugin decide the version
 }
+
+rootProject.tasks.named("ci") {
+    dependsOn(tasks.named("build"))
+}

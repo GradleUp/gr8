@@ -161,3 +161,18 @@ plugins.withId("java-gradle-plugin") {
         tags = listOf("gradle", "r8", "gr8")
     }
 }
+
+fun isTag(): Boolean {
+    val ref = System.getenv("GITHUB_REF")
+
+    return ref?.startsWith("refs/tags/") == true
+}
+
+if (isTag()) {
+    rootProject.tasks.named("ci") {
+        dependsOn(tasks.named("publishAllPublicationsToOssStagingRepository"))
+        plugins.withId("com.gradle.plugin-publish") {
+            dependsOn(tasks.named("publishPlugins"))
+        }
+    }
+}

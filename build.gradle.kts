@@ -5,16 +5,4 @@ repositories {
     mavenCentral()
 }
 
-fun isTag(): Boolean {
-    val ref = System.getenv("GITHUB_REF")
-
-    return ref?.startsWith("refs/tags/") == true
-}
-
-//tasks.register("ci") {
-//    dependsOn("build")
-//    if (isTag()) {
-//        dependsOn("publishAllPublicationsToOssStagingRepository")
-//        dependsOn("publishPlugins")
-//    }
-//}
+tasks.register("ci")
