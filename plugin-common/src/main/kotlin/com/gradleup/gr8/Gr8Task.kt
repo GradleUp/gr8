@@ -5,7 +5,6 @@ import com.android.tools.r8.JdkClassFileProvider
 import com.android.tools.r8.OutputMode
 import com.android.tools.r8.R8
 import com.android.tools.r8.R8Command
-import kotlinx.metadata.jvm.jvmInternalName
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.*
 import org.gradle.api.provider.Provider
@@ -58,7 +57,6 @@ abstract class Gr8Task : DefaultTask() {
     proguardConfigurationFiles.disallowChanges()
   }
 
-  @OptIn(ExperimentalStdlibApi::class)
   private fun FileTree.paths(): List<String> {
     return buildList {
       visit(object : FileVisitor {
