@@ -27,6 +27,9 @@ gradlePlugin {
         create("gr8") {
             id = "com.gradleup.gr8.external"
             implementationClass = "com.gradleup.gr8.Gr8Plugin"
+            // This is required by the Gradle publish plugin
+            displayName = name
+            description = description
         }
     }
 }
