@@ -9,6 +9,8 @@ plugins {
 group = "com.gradleup"
 version = "0.5"
 
+val projectVersion = version
+
 project.extra.set("gradle.publish.key", System.getenv("GRADLE_KEY"))
 project.extra.set("gradle.publish.secret", System.getenv("GRADLE_SECRET"))
 
@@ -44,7 +46,7 @@ fun Project.getOssStagingUrl(): String {
     val repositoryId = kotlinx.coroutines.runBlocking {
         client.createRepository(
             profileId = System.getenv("COM_GRADLEUP_PROFILE_ID"),
-            description = "$group:$name $version"
+            description = "$group:$name $projectVersion"
         )
     }
     println("publishing to '$repositoryId")
