@@ -9,7 +9,11 @@ val shadeConfiguration: Configuration = configurations.create("shade")
 val classpathConfiguration: Configuration = configurations.create("gr8Classpath")
 
 dependencies {
-    add("shade", project(":plugin-common"))
+    add("shade", project(":plugin-common")) {
+        // Because we only allow stripping the gradleApi from the classpath, we remove
+        exclude("dev.gradleplugins", "gradle-api")
+    }
+    compileOnly("dev.gradleplugins:gradle-api:6.0")
     add("gr8Classpath", "dev.gradleplugins:gradle-api:6.0") {
         exclude("org.apache.ant", )
     }

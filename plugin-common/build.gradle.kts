@@ -4,7 +4,7 @@ plugins {
 }
 
 dependencies {
-    compileOnly("dev.gradleplugins:gradle-api:6.0")
+    api("dev.gradleplugins:gradle-api:6.0")
     implementation("net.mbonnin.r8:r8:3.2.49")
 }
 
