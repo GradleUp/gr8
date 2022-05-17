@@ -36,10 +36,10 @@ if (true) {
 }
 
 val name = "Gr8 Plugin"
-val description = "The Gr8 Plugin packaged with all dependencies relocated"
+val gr8description = "The Gr8 Plugin packaged with all dependencies relocated"
 
 gr8Publishing {
-    configurePublications(name, description)
+    configurePublications(name, gr8description)
 }
 gradlePlugin {
     plugins {
@@ -48,7 +48,7 @@ gradlePlugin {
             implementationClass = "com.gradleup.gr8.Gr8Plugin"
             // This is required by the Gradle publish plugin
             displayName = name
-            description = description
+            description = gr8description
         }
     }
 }

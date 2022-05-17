@@ -17,10 +17,10 @@ fun Dependency?.excludeKotlinStdlib() {
 }
 
 val name = "Gr8 Plugin External"
-val description = "The Gr8 Plugin packaged with external dependencies"
+val gr8Description = "The Gr8 Plugin packaged with external dependencies"
 
 gr8Publishing {
-    configurePublications(name, description)
+    configurePublications(name, gr8Description)
 }
 gradlePlugin {
     plugins {
@@ -29,7 +29,7 @@ gradlePlugin {
             implementationClass = "com.gradleup.gr8.Gr8Plugin"
             // This is required by the Gradle publish plugin
             displayName = name
-            description = description
+            description = gr8Description
         }
     }
 }
