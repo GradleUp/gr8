@@ -1,6 +1,3 @@
-# The Gradle API jar isn't added to the classpath, ignore the missing symbols
--ignorewarnings
-
 # Keep kotlin metadata so that the Kotlin compiler knows about top level functions
 -keep class kotlin.Metadata { *; }
 # Keep Unit as it's in the signature of public methods:
@@ -20,10 +17,8 @@
 # Keep everything com.gradleup.** as it's being used from Gradle
 -keep class com.gradleup.** { *; }
 
-# Allow to make some classes public so that we can repackage them without breaking package-private members
--allowaccessmodification
 # Makes it easier to debug on MacOS case-insensitive filesystem when unzipping the jars
 -dontusemixedcaseclassnames
--repackageclasses com.gradleup.relocated
+-repackageclasses com.gradleup.gr8.relocated
 
 
