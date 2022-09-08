@@ -1,4 +1,11 @@
-.idea
+# Idea
+**/.idea/*
+!**/.idea/codeStyles
+!**/.idea/icon.png
+!**/.idea/runConfigurations
+!**/.idea/scopes
+*.iml
+
 .gradle
 build
 .DS_Store
