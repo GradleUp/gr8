@@ -19,6 +19,6 @@
 
 # Makes it easier to debug on MacOS case-insensitive filesystem when unzipping the jars
 -dontusemixedcaseclassnames
--repackageclasses com.gradleup.relocated
+-repackageclasses com.gradleup.gr8.relocated
 
 
