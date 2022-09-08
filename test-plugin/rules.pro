@@ -24,6 +24,7 @@
 -allowaccessmodification
 # Makes it easier to debug on MacOS case-insensitive filesystem when unzipping the jars
 -dontusemixedcaseclassnames
+-dontobfuscate
 -repackageclasses com.gradleup.relocated
 
 

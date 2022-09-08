@@ -1,17 +1,10 @@
-buildscript {
-  dependencies {
-    classpath("com.gradleup.gr8:gr8")
-  }
-}
-
 plugins {
   id("org.jetbrains.kotlin.jvm").version("1.5.21")
   id("java-gradle-plugin")
   id("maven-publish")
   id("com.gradle.plugin-publish").version("0.15.0")
+  id("com.gradleup.gr8.external")
 }
-
-apply(plugin = "com.gradleup.gr8")
 
 repositories {
   mavenCentral()
@@ -45,7 +38,6 @@ configure<com.gradleup.gr8.Gr8Extension> {
   val shadowedJar = create("gr8") {
     proguardFile("rules.pro")
     configuration("runtimeClasspath")
-    workaroundDefaultConstructorMarker(true)
   }
 
   addShadowedVariant(shadowedJar)

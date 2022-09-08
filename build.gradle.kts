@@ -1,8 +1,8 @@
 plugins {
-    id("gr8.build.common").apply(false)
+  id("gr8.build.common").apply(false)
 }
 repositories {
-    mavenCentral()
+  mavenCentral()
 }
 
 tasks.register("ci")
