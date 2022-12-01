@@ -13,11 +13,12 @@ import java.io.File
 /**
  * A task that generates an embedded jar from a list of jars
  */
+@CacheableTask
 abstract class EmbeddedJarTask : DefaultTask() {
-  @get:InputFile
+  @get:Classpath
   internal abstract val mainJar: RegularFileProperty
 
-  @get:InputFiles
+  @get:Classpath
   internal abstract val otherJars: ConfigurableFileCollection
 
   @get:Input

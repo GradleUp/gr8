@@ -8,27 +8,27 @@ import com.android.tools.r8.R8Command
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.*
 import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.OutputFile
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.*
 import org.gradle.internal.jvm.Jvm
 import java.io.File
 
+@CacheableTask
 abstract class Gr8Task : DefaultTask() {
-  @get:InputFiles
+  @get:Classpath
   internal abstract val programFiles: ConfigurableFileCollection
 
-  @get:InputFiles
+  @get:Classpath
   internal abstract val classPathFiles: ConfigurableFileCollection
+
+  @get:InputFiles
+  @get:PathSensitive(PathSensitivity.RELATIVE)
+  internal abstract val proguardConfigurationFiles: ConfigurableFileCollection
 
   @get:OutputFile
   internal abstract val outputJar: RegularFileProperty
 
   @get:OutputFile
   internal abstract val mapping: RegularFileProperty
-
-  @get:InputFiles
-  internal abstract val proguardConfigurationFiles: ConfigurableFileCollection
 
   fun programFiles(any: Any) {
     programFiles.from(any)
