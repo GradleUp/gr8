@@ -48,14 +48,20 @@ gr8 {
   // Replace the regular jar with the shadowed one in the publication
   replaceOutgoingJar(shadowedJar)
 
-  // Make the shadowed dependencies available during compilation/tests
-  configurations.named("compileOnly").configure {
-    extendsFrom(shadeConfiguration)
-  }
-  configurations.named("testImplementation").configure {
-    extendsFrom(shadeConfiguration)
-  }
+  // Removes the gradleApi dependency that java-gradle-plugin automatically adds
+  // Optional, but recommended when using a compileOnly dependency
+  // on dev.gradleplugins:gradle-api
+  removeGradleApiFromApi()
 }
+
+// Make the shadowed dependencies available during compilation/tests
+configurations.named("compileOnly").configure {
+  extendsFrom(shadeConfiguration)
+}
+configurations.named("testImplementation").configure {
+  extendsFrom(shadeConfiguration)
+}
+
 ```
 
 Then customize your proguard rules. The below is the bare minimum. If you're using reflection, you might need more rules 
@@ -68,6 +74,12 @@ Then customize your proguard rules. The below is the bare minimum. If you're usi
 
 # Keep kotlin metadata so that the Kotlin compiler knows about top level functions and other things
 -keep class kotlin.Metadata { *; }
+
+# Keep FunctionX because they are used in the public API of Gradle/AGP/KGP
+-keep class kotlin.jvm.functions.** { *; }
+
+# Keep Unit for kts compatibility, functions in a Gradle extension returning a relocated Unit won't work
+-keep class kotlin.Unit
 
 # We need to keep type arguments (Signature) for Gradle to be able to instantiate abstract models like `Property`
 -keepattributes Signature,Exceptions,*Annotation*,InnerClasses,PermittedSubclasses,EnclosingMethod,Deprecated,SourceFile,LineNumberTable
