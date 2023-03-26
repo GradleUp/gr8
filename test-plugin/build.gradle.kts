@@ -1,7 +1,7 @@
 import com.gradleup.gr8.StripGradleApiTask.Companion.isGradleApi
 
 plugins {
-  id("org.jetbrains.kotlin.jvm").version("1.6.20")
+  id("org.jetbrains.kotlin.jvm").version("1.5.21")
   id("maven-publish")
   id("com.gradleup.gr8.external")
 }
@@ -29,8 +29,8 @@ dependencies {
   // Do not use gradleApi() as it forces Kotlin 1.4 on the classpath
   compileOnly("dev.gradleplugins:gradle-api:6.9")
 
+  testImplementation("dev.gradleplugins:gradle-test-kit:6.9")
   testImplementation("org.jetbrains.kotlin:kotlin-test")
-  testImplementation(gradleTestKit())
 }
 
 configure<com.gradleup.gr8.Gr8Extension> {
