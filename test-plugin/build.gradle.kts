@@ -1,27 +1,14 @@
 import com.gradleup.gr8.StripGradleApiTask.Companion.isGradleApi
 
 plugins {
-  id("org.jetbrains.kotlin.jvm").version("1.5.21")
-  id("java-gradle-plugin")
+  id("org.jetbrains.kotlin.jvm").version("1.6.20")
   id("maven-publish")
-  id("com.gradle.plugin-publish").version("0.15.0")
   id("com.gradleup.gr8.external")
 }
 
 repositories {
   mavenCentral()
   google()
-}
-
-gradlePlugin {
-  plugins {
-    create("testPlugin") {
-      id = "com.gradleup.test"
-      displayName = "A test plugin"
-      description = "A test plugin"
-      implementationClass = "com.gradleup.test.TestPlugin"
-    }
-  }
 }
 
 group = "com.gradleup.gr8"
@@ -43,8 +30,8 @@ dependencies {
   compileOnly("dev.gradleplugins:gradle-api:6.9")
 
   testImplementation("org.jetbrains.kotlin:kotlin-test")
+  testImplementation(gradleTestKit())
 }
-
 
 configure<com.gradleup.gr8.Gr8Extension> {
   removeGradleApiFromApi()
