@@ -1,4 +1,5 @@
 import com.gradleup.gr8.StripGradleApiTask.Companion.isGradleApi
+import org.gradle.api.attributes.Usage.JAVA_API
 import org.w3c.dom.Element
 
 plugins {
@@ -28,19 +29,17 @@ check(gradleTest.files.single().isGradleApi())
 
 dependencies {
   // Do not use gradleApi() as it forces Kotlin 1.4 on the classpath
-  compileOnly("dev.gradleplugins:gradle-api:7.6") {
-    exclude("org.apache.ant")
-    exclude("org.codehaus.groovy", "groovy-swing")
-    exclude("org.codehaus.groovy", "groovy-docgenerator")
-    exclude("org.slf4j")
-  }
-
+  compileOnly("dev.gradleplugins:gradle-api:7.6")
+  
   testImplementation("dev.gradleplugins:gradle-test-kit:6.9")
   testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
 
 configurations.create("gr8ClassPath") {
   extendsFrom(configurations.getByName("compileOnly"))
+  attributes {
+    attribute(Usage.USAGE_ATTRIBUTE, objects.named(JAVA_API))
+  }
 }
 
 configure<com.gradleup.gr8.Gr8Extension> {
