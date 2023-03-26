@@ -22,6 +22,7 @@ val gr8Description = "The Gr8 Plugin packaged with external dependencies"
 gr8Publishing {
   configurePublications(name, gr8Description)
 }
+
 gradlePlugin {
   plugins {
     create("gr8") {
