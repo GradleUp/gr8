@@ -1,27 +1,15 @@
 import com.gradleup.gr8.StripGradleApiTask.Companion.isGradleApi
+import org.w3c.dom.Element
 
 plugins {
   id("org.jetbrains.kotlin.jvm").version("1.5.21")
-  id("java-gradle-plugin")
   id("maven-publish")
-  id("com.gradle.plugin-publish").version("0.15.0")
   id("com.gradleup.gr8.external")
 }
 
 repositories {
   mavenCentral()
   google()
-}
-
-gradlePlugin {
-  plugins {
-    create("testPlugin") {
-      id = "com.gradleup.test"
-      displayName = "A test plugin"
-      description = "A test plugin"
-      implementationClass = "com.gradleup.test.TestPlugin"
-    }
-  }
 }
 
 group = "com.gradleup.gr8"
@@ -42,9 +30,9 @@ dependencies {
   // Do not use gradleApi() as it forces Kotlin 1.4 on the classpath
   compileOnly("dev.gradleplugins:gradle-api:6.9")
 
+  testImplementation("dev.gradleplugins:gradle-test-kit:6.9")
   testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
-
 
 configure<com.gradleup.gr8.Gr8Extension> {
   removeGradleApiFromApi()
@@ -68,5 +56,29 @@ publishing {
       url = uri("file://${rootProject.buildDir}/localMaven")
     }
   }
-}
 
+  publications.create("default", MavenPublication::class.java) {
+    from(components.getByName("java"))
+  }
+  publications.create("marker", MavenPublication::class.java) {
+    this.groupId = "com.gradleup.test"
+    this.artifactId = "com.gradleup.test.gradle.plugin"
+
+    /**
+     * From https://github.com/gradle/gradle/blob/38930bc7f5891f3d2ca00d20ab0af22013c17f00/subprojects/plugin-development/src/main/java/org/gradle/plugin/devel/plugins/MavenPluginPublishPlugin.java#L85
+     *
+     */
+    this.pom.withXml {
+      val root: Element = asElement()
+      val document = root.ownerDocument
+      val dependencies = root.appendChild(document.createElement("dependencies"))
+      val dependency = dependencies.appendChild(document.createElement("dependency"))
+      val groupId = dependency.appendChild(document.createElement("groupId"))
+      groupId.textContent = "com.gradleup.test"
+      val artifactId = dependency.appendChild(document.createElement("artifactId"))
+      artifactId.textContent = "com.gradleup.test.gradle.plugin"
+      val version = dependency.appendChild(document.createElement("version"))
+      version.textContent = project.version.toString()
+    }
+  }
+}
