@@ -1,6 +1,3 @@
-# The Gradle API jar isn't added to the classpath, ignore the missing symbols
--ignorewarnings
-
 # Keep kotlin metadata so that the Kotlin compiler knows about top level functions
 -keep class kotlin.Metadata { *; }
 # Keep Unit as it's in the signature of public methods:
