@@ -1,4 +1,5 @@
 import com.gradleup.gr8.StripGradleApiTask.Companion.isGradleApi
+import org.w3c.dom.Element
 
 plugins {
   id("org.jetbrains.kotlin.jvm").version("1.5.21")
@@ -55,5 +56,29 @@ publishing {
       url = uri("file://${rootProject.buildDir}/localMaven")
     }
   }
-}
 
+  publications.create("default", MavenPublication::class.java) {
+    from(components.getByName("java"))
+  }
+  publications.create("marker", MavenPublication::class.java) {
+    this.groupId = "com.gradleup.test"
+    this.artifactId = "com.gradleup.test.gradle.plugin"
+
+    /**
+     * From https://github.com/gradle/gradle/blob/38930bc7f5891f3d2ca00d20ab0af22013c17f00/subprojects/plugin-development/src/main/java/org/gradle/plugin/devel/plugins/MavenPluginPublishPlugin.java#L85
+     *
+     */
+    this.pom.withXml {
+      val root: Element = asElement()
+      val document = root.ownerDocument
+      val dependencies = root.appendChild(document.createElement("dependencies"))
+      val dependency = dependencies.appendChild(document.createElement("dependency"))
+      val groupId = dependency.appendChild(document.createElement("groupId"))
+      groupId.textContent = "com.gradleup.test"
+      val artifactId = dependency.appendChild(document.createElement("artifactId"))
+      artifactId.textContent = "com.gradleup.test.gradle.plugin"
+      val version = dependency.appendChild(document.createElement("version"))
+      version.textContent = project.version.toString()
+    }
+  }
+}
