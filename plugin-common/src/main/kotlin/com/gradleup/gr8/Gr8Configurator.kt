@@ -3,18 +3,22 @@ package com.gradleup.gr8
 import com.gradleup.gr8.StripGradleApiTask.Companion.isGradleApi
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.file.RegularFile
+import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.bundling.AbstractArchiveTask
 import org.gradle.api.tasks.bundling.Jar
+import org.gradle.jvm.toolchain.JavaLauncher
+import org.gradle.jvm.toolchain.JavaToolchainService
+import org.gradle.jvm.toolchain.JavaToolchainSpec
 import java.io.File
 
 open class Gr8Configurator(
     private val name: String,
     private val project: Project,
+    private val javaToolchainService: JavaToolchainService,
 ) {
   private var programJar: Property<Any> = project.objects.property(Any::class.java)
   private var configuration: Property<String> = project.objects.property(String::class.java)
@@ -23,8 +27,16 @@ open class Gr8Configurator(
   private var proguardFiles = mutableListOf<Any>()
   private var stripGradleApi: Property<Boolean> = project.objects.property(Boolean::class.java)
   private var excludes: ListProperty<String> = project.objects.listProperty(String::class.java)
+  private val javaLauncher: Property<JavaLauncher> = project.objects.property(JavaLauncher::class.java)
 
   private val buildDir = project.layout.buildDirectory.dir("gr8/$name").get().asFile
+
+  init {
+    val javaExtension = project.extensions.findByType(JavaPluginExtension::class.java)
+    if (javaExtension != null) {
+      javaLauncher.convention(javaToolchainService.launcherFor(javaExtension.toolchain))
+    }
+  }
 
   /**
    * The configuration to include in the resulting output jar.
@@ -122,6 +134,16 @@ open class Gr8Configurator(
     this.excludes.add(exclude)
   }
 
+  /**
+   * The java toolchain to use for discovering system classes when running R8
+   *
+   * The system classes from this Java toolchain will be passed to R8 when invoking it, enabling you
+   * to target Java 11 toolchain while building on newer JDKs. Defaults to the toolchain used to compile.
+   */
+  fun toolchain(toolchain: JavaToolchainSpec) {
+    this.javaLauncher.set(javaToolchainService.launcherFor(toolchain))
+  }
+
   private fun defaultProgramJar(): Provider<File> {
     return project.tasks.named("jar").flatMap {
       (it as Jar).archiveFile
@@ -181,6 +203,8 @@ open class Gr8Configurator(
       val archiveName = archiveName.getOrElse("${project.name}-${project.version}-shadowed.jar")
       task.outputJar(File(buildDir, archiveName))
       task.proguardConfigurationFiles.from(proguardFiles.toTypedArray())
+
+      task.javaLauncher.set(javaLauncher)
     }
 
     return r8TaskProvider
