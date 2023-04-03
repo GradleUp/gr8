@@ -100,6 +100,31 @@ For plugins that generate source code and contain a lot of package names, this m
 
 By using `R8` and [proguard rules](https://www.guardsquare.com/manual/configuration/usage), `Gr8` makes relocation more predictable and configurable.
 
+**Can I override the system classes used by `R8`, like target JDK 11 with my plugin while building on Java 17?**
+
+If you set your Java toolchain then R8 will also use the same toolchain to discover system classes:
+
+```
+java {
+  toolchain {
+    languageVersion.set(JavaLanguageVersion.of(11))
+  }
+}
+```
+
+If for some reason you want to override this explicitly:
+
+```
+gr8 {
+  val shadowedJar = create("gr8") {
+    proguardFile("rules.pro")
+    configuration("shade")
+    systemClassesToolchain {
+      languageVersion.set(JavaLanguageVersion.of(11))
+    }
+  }
+}
+```
 
 **Could I use the Gradle Worker API instead?** 
 
