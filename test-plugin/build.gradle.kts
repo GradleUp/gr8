@@ -54,6 +54,13 @@ tasks.named("test") {
   dependsOn("publishAllPublicationsToPluginTestRepository")
 }
 
+java {
+  toolchain {
+    // Tests use a pretty old version of Gradle so let's stick with an old version of Java as well
+    languageVersion.set(JavaLanguageVersion.of(11))
+  }
+}
+
 publishing {
   repositories {
     maven {
