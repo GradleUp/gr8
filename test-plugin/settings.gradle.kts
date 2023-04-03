@@ -1,10 +1,5 @@
 pluginManagement {
   includeBuild("../")
-
-  repositories {
-    //mavenLocal()
-    mavenCentral()
-    google()
-    gradlePluginPortal()
-  }
 }
+
+apply(from = "../gradle/repositories.gradle.kts")

@@ -8,11 +8,6 @@ plugins {
   id("com.gradleup.gr8.external")
 }
 
-repositories {
-  mavenCentral()
-  google()
-}
-
 group = "com.gradleup.gr8"
 version = "0.1"
 
@@ -92,3 +87,5 @@ publishing {
     }
   }
 }
+
+
