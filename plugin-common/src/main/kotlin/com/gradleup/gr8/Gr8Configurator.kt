@@ -1,6 +1,7 @@
 package com.gradleup.gr8
 
 import com.gradleup.gr8.StripGradleApiTask.Companion.isGradleApi
+import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.plugins.JavaPluginExtension
@@ -10,6 +11,7 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.bundling.AbstractArchiveTask
 import org.gradle.api.tasks.bundling.Jar
+import org.gradle.jvm.toolchain.JavaCompiler
 import org.gradle.jvm.toolchain.JavaLauncher
 import org.gradle.jvm.toolchain.JavaToolchainService
 import org.gradle.jvm.toolchain.JavaToolchainSpec
@@ -27,14 +29,14 @@ open class Gr8Configurator(
   private var proguardFiles = mutableListOf<Any>()
   private var stripGradleApi: Property<Boolean> = project.objects.property(Boolean::class.java)
   private var excludes: ListProperty<String> = project.objects.listProperty(String::class.java)
-  private val javaLauncher: Property<JavaLauncher> = project.objects.property(JavaLauncher::class.java)
+  private val javaCompiler: Property<JavaCompiler> = project.objects.property(JavaCompiler::class.java)
 
   private val buildDir = project.layout.buildDirectory.dir("gr8/$name").get().asFile
 
   init {
     val javaExtension = project.extensions.findByType(JavaPluginExtension::class.java)
     if (javaExtension != null) {
-      javaLauncher.convention(javaToolchainService.launcherFor(javaExtension.toolchain))
+      javaCompiler.convention(javaToolchainService.compilerFor(javaExtension.toolchain))
     }
   }
 
@@ -135,13 +137,40 @@ open class Gr8Configurator(
   }
 
   /**
-   * The java toolchain to use for discovering system classes when running R8
+   * The java compiler toolchain to use for discovering system classes when running R8
    *
    * The system classes from this Java toolchain will be passed to R8 when invoking it, enabling you
-   * to target Java 11 toolchain while building on newer JDKs. Defaults to the toolchain used to compile.
+   * to target any version of Java toolchain while building on newer JDKs. Defaults to the toolchain used to compile.
+   *
+   * Usage:
+   *
+   * ```
+   * systemClassesToolchain(javaToolchains.compilerFor {
+   *   languageVersion.set(JavaLanguageVersion.of(11))
+   * })
+   * ```
    */
-  fun toolchain(toolchain: JavaToolchainSpec) {
-    this.javaLauncher.set(javaToolchainService.launcherFor(toolchain))
+  fun systemClassesToolchain(compiler: JavaCompiler) {
+    this.javaCompiler.set(compiler)
+  }
+
+  /**
+   * The java compiler toolchain to use for discovering system classes when running R8, defaults to the Java extension
+   * toolchain (also used for compiling your classes)
+   *
+   * The system classes from this Java toolchain will be passed to R8 when invoking it, enabling you
+   * to target any version of Java toolchain while building on newer JDKs. Defaults to the toolchain used to compile.
+   *
+   * Usage:
+   *
+   * ```
+   * systemClassesToolchain {
+   *   languageVersion.set(JavaLanguageVersion.of(11))
+   * }
+   * ```
+   */
+  fun systemClassesToolchain(spec: Action<JavaToolchainSpec>) {
+    this.javaCompiler.set(javaToolchainService.compilerFor(spec))
   }
 
   private fun defaultProgramJar(): Provider<File> {
@@ -204,7 +233,7 @@ open class Gr8Configurator(
       task.outputJar(File(buildDir, archiveName))
       task.proguardConfigurationFiles.from(proguardFiles.toTypedArray())
 
-      task.javaLauncher.set(javaLauncher)
+      task.javaCompiler.set(javaCompiler)
     }
 
     return r8TaskProvider

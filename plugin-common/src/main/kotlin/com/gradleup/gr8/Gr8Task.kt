@@ -5,13 +5,14 @@ import com.android.tools.r8.JdkClassFileProvider
 import com.android.tools.r8.OutputMode
 import com.android.tools.r8.R8
 import com.android.tools.r8.R8Command
+import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.*
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.*
 import org.gradle.internal.jvm.Jvm
-import org.gradle.jvm.toolchain.JavaLauncher
+import org.gradle.jvm.toolchain.JavaCompiler
 import org.gradle.jvm.toolchain.JavaToolchainService
 import org.gradle.jvm.toolchain.JavaToolchainSpec
 import java.io.File
@@ -37,7 +38,7 @@ abstract class Gr8Task : DefaultTask() {
 
   @get:Nested
   @get:Optional
-  internal abstract val javaLauncher: Property<JavaLauncher>
+  internal abstract val javaCompiler: Property<JavaCompiler>
 
   @get:Inject
   protected abstract val javaToolchainService: JavaToolchainService
@@ -62,14 +63,14 @@ abstract class Gr8Task : DefaultTask() {
     mapping.disallowChanges()
   }
 
-  fun javaLauncher(launcher: JavaLauncher) {
-    javaLauncher.set(launcher)
-    javaLauncher.disallowChanges()
+  fun javaLauncher(launcher: JavaCompiler) {
+    javaCompiler.set(launcher)
+    javaCompiler.disallowChanges()
   }
 
-  fun toolchain(toolchain: JavaToolchainSpec) {
-    javaLauncher.set(javaToolchainService.launcherFor(toolchain))
-    javaLauncher.disallowChanges()
+  fun toolchain(spec: Action<JavaToolchainSpec>) {
+    javaCompiler.set(javaToolchainService.compilerFor(spec))
+    javaCompiler.disallowChanges()
   }
 
   fun outputJar(): Provider<RegularFile> = outputJar
@@ -105,8 +106,8 @@ abstract class Gr8Task : DefaultTask() {
           }
         }
         .apply {
-          if (javaLauncher.isPresent) {
-            val javaHome = javaLauncher.get().metadata.installationPath.asFile.toPath()
+          if (javaCompiler.isPresent) {
+            val javaHome = javaCompiler.get().metadata.installationPath.asFile.toPath()
             addLibraryResourceProvider(JdkClassFileProvider.fromJdkHome(javaHome))
           } else {
             addLibraryResourceProvider(JdkClassFileProvider.fromJdkHome(Jvm.current().javaHome.toPath()))
