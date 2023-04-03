@@ -3,7 +3,6 @@ pluginManagement {
     it.apply {
       mavenCentral()
       google()
-      maven("https://oss.sonatype.org/content/repositories/netmbonnin-1111")
       gradlePluginPortal()
     }
   }
