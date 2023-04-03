@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
   api("dev.gradleplugins:gradle-api:6.7")
-  implementation("net.mbonnin.r8:r8:3.4.0-dev.0")
+  implementation("net.mbonnin.r8:r8:4.0.55")
 }
 
 val name = "Gr8 Plugin Common"

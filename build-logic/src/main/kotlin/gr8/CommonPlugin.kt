@@ -10,12 +10,6 @@ class CommonPlugin : Plugin<Project> {
     with(target) {
       plugins.apply("org.jetbrains.kotlin.jvm")
 
-      repositories.apply {
-        //mavenLocal()
-        mavenCentral()
-        google()
-      }
-
       extensions.getByType(JavaPluginExtension::class.java).toolchain {
         languageVersion.set(JavaLanguageVersion.of(8))
       }
