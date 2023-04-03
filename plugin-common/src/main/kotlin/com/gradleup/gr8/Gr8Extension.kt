@@ -12,12 +12,17 @@ import org.gradle.api.internal.artifacts.dependencies.DefaultSelfResolvingDepend
 import org.gradle.api.provider.Provider
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.jvm.toolchain.JavaToolchainService
+import javax.inject.Inject
 
-open class Gr8Extension(
+abstract class Gr8Extension(
   private val project: Project,
 ) {
 
   private val configurators = mutableSetOf<String>()
+
+  @get:Inject
+  protected abstract val javaToolchainService: JavaToolchainService
 
   /**
    * @return a provider that returns the new fat-minimized jar
@@ -27,7 +32,7 @@ open class Gr8Extension(
       "Gr8: $name is already created"
     }
 
-    val configurator = Gr8Configurator(name, project)
+    val configurator = Gr8Configurator(name, project, javaToolchainService)
     configurators.add(name)
 
     action.execute(configurator)

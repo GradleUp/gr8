@@ -13,8 +13,8 @@ dependencies {
     // Because we only allow stripping the gradleApi from the classpath, we remove
     exclude("dev.gradleplugins", "gradle-api")
   }
-  compileOnly("dev.gradleplugins:gradle-api:6.0")
-  add("gr8Classpath", "dev.gradleplugins:gradle-api:6.0") {
+  compileOnly("dev.gradleplugins:gradle-api:6.7")
+  add("gr8Classpath", "dev.gradleplugins:gradle-api:6.7") {
     exclude("org.apache.ant")
   }
 }
