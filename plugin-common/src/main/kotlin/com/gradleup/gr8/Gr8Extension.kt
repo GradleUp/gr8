@@ -42,7 +42,7 @@ abstract class Gr8Extension(
     project.plugins.withId("maven-publish") {
       project.extensions.findByType(PublishingExtension::class.java)?.apply {
         publications.withType(MavenPublication::class.java).configureEach {
-          if (!name.lowercase().contains("marker")) {
+          if (!it.name.lowercase().contains("marker")) {
             it.artifact(provider.flatMap { it.mapping }) {
               it.classifier = "mapping"
             }
