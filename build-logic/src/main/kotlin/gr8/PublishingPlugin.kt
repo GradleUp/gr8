@@ -21,7 +21,7 @@ class PublishingPlugin : Plugin<Project> {
 
 
       group = "com.gradleup"
-      version = "0.9"
+      version = "0.10"
 
       val projectVersion = version
 
