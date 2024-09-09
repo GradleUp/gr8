@@ -2,12 +2,6 @@ plugins {
   id("java")
 }
 
-repositories {
-  mavenCentral()
-  google()
-  gradlePluginPortal() // for the publish plugin
-}
-
 group = "build-logic"
 
 dependencies {

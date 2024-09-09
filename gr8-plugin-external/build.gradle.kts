@@ -6,7 +6,7 @@ plugins {
 }
 
 dependencies {
-  implementation(project(":plugin-common")).excludeKotlinStdlib()
+  implementation(project(":gr8-plugin-common")).excludeKotlinStdlib()
 }
 
 fun Dependency?.excludeKotlinStdlib() {

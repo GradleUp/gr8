@@ -2,7 +2,7 @@ includeBuild("build-logic")
 
 apply(from = "./gradle/repositories.gradle.kts")
 
-include(":plugin")
-include(":plugin-external")
-include(":plugin-common")
+include(":gr8-plugin")
+include(":gr8-plugin-external")
+include(":gr8-plugin-common")
 

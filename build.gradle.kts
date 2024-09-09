@@ -8,6 +8,7 @@ buildscript {
   repositories {
     mavenCentral()
     gradlePluginPortal()
+    google()
   }
 }
 

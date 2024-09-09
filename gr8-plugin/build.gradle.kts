@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 import com.gradleup.librarian.gradle.librarianModule
 
 plugins {
@@ -10,7 +12,7 @@ val shadeConfiguration: Configuration = configurations.create("shade")
 val classpathConfiguration: Configuration = configurations.create("gr8Classpath")
 
 dependencies {
-  add("shade", project(":plugin-common")) {
+  add("shade", project(":gr8-plugin-common")) {
     // Because we only allow stripping the gradleApi from the classpath, we remove
     exclude("dev.gradleplugins", "gradle-api")
   }
@@ -29,6 +31,10 @@ if (true) {
       proguardFile("rules.pro")
       classPathConfiguration("gr8Classpath")
       stripGradleApi(true)
+
+      systemClassesToolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+      }
     }
 
     // The java-gradle-plugin adds `gradleApi()` to the `api` implementation but it contains some JDK15 bytecode at

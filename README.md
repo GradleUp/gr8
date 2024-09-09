@@ -146,3 +146,6 @@ Yes, the [Gradle Worker API](https://docs.gradle.org/current/userguide/worker_ap
 
 Yes. Because every plugin now relocates its own version of `kotlin-stdlib`, `okio` and other dependendancies, it means more work for the Classloaders and more Metaspace being used. There's a risk that builds will use more memory although it hasn't been a big issue so far.
 
+**What does this bring compared to using R8 directly in a `JavaExec` task?**
+
+Using R8 directly from a `JavaExec` works as well. GR8 adds a few extra things like the ability to filter out some files in the dependencies. This is useful for an example to remove the dependencies rules that are otherwise automatically imported by R8.  
