@@ -1,20 +1,13 @@
+import com.gradleup.librarian.gradle.librarianModule
+
 plugins {
-  id("gr8.build.common")
-  id("gr8.build.publishing")
+  id("org.jetbrains.kotlin.jvm")
 }
 
 dependencies {
-  api("dev.gradleplugins:gradle-api:6.7")
-  implementation("net.mbonnin.r8:r8:8.3.8")
+  compileOnly(libs.gradle.api)
+  implementation(libs.r8)
 }
 
-val name = "Gr8 Plugin Common"
-val description = "The Gr8 Plugin bytecode with no plugin declaration"
+librarianModule()
 
-gr8Publishing {
-  configurePublications(name, description)
-}
-
-publishing.publications.create("default", MavenPublication::class.java) {
-  from(components.getByName("java"))
-}

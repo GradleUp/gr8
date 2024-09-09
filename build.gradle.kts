@@ -1,5 +1,14 @@
-plugins {
-  id("gr8.build.common").apply(false)
+import com.gradleup.librarian.gradle.librarianRoot
+
+buildscript {
+  dependencies {
+    classpath("build-logic:build-logic")
+  }
+
+  repositories {
+    mavenCentral()
+    gradlePluginPortal()
+  }
 }
 
-tasks.register("ci")
+librarianRoot()
