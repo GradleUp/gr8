@@ -2,13 +2,13 @@ package com.gradleup.gr8
 
 import org.gradle.api.Action
 import org.gradle.api.Project
+import org.gradle.api.artifacts.FileCollectionDependency
 import org.gradle.api.attributes.Bundling
 import org.gradle.api.attributes.Category
 import org.gradle.api.attributes.LibraryElements
 import org.gradle.api.attributes.Usage
 import org.gradle.api.component.AdhocComponentWithVariants
 import org.gradle.api.file.RegularFile
-import org.gradle.api.internal.artifacts.dependencies.DefaultSelfResolvingDependency
 import org.gradle.api.provider.Provider
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
@@ -105,19 +105,28 @@ abstract class Gr8Extension(
     project.artifacts.add("gr8", shadowedJar)
   }
 
+  /**
+   * Removes `gradleApi()` from the `api` configuration.
+   *
+   * `gradleApi()` is added automatically by the `java-gradle-plugin` plugin but is generally not desired because:
+   * - the Gradle API version used to compile a plugin is different from the version used to run it (see https://github.com/gradle/gradle/issues/1835)
+   * - exposing Gradle API gives more work to R8 and has been seen failing due to issues like below
+   *
+   * ```
+   * org/gradle/internal/impldep/META-INF/versions/15/org/bouncycastle/jcajce/provider/asymmetric/edec/SignatureSpi$EdDSA.class:
+   * java.lang.IllegalArgumentException: Unsupported class file major version 59
+   * ```
+   *
+   * Note: there's no public API for determining whether a dependency is actually the `gradleApi()` dependency.
+   * This method makes a best guess by removing all `FileCollectionDependency`. If you added `FileCollectionDependency`,
+   * you'll want to use something else.
+   */
   fun removeGradleApiFromApi() {
-    // The java-gradle-plugin adds `gradleApi()` to the `api` implementation but it contains some JDK15 bytecode at
-    // org/gradle/internal/impldep/META-INF/versions/15/org/bouncycastle/jcajce/provider/asymmetric/edec/SignatureSpi$EdDSA.class:
-    //java.lang.IllegalArgumentException: Unsupported class file major version 59
-    // So remove it
     val apiDependencies = project.configurations.getByName("api").dependencies
-    val gradleApi = apiDependencies.firstOrNull {
-      val targetComponentId = (it as? DefaultSelfResolvingDependency)?.targetComponentId?.toString()
-      targetComponentId == "Gradle API"
-    }
-
-    if (gradleApi != null) {
-      apiDependencies.remove(gradleApi)
+    apiDependencies.firstOrNull {
+      it is FileCollectionDependency
+    }.let {
+      apiDependencies.remove(it)
     }
   }
 }
