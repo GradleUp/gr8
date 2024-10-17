@@ -1,0 +1,115 @@
+public final class com/gradleup/gr8/DetectDuplicatesKt {
+	public static final fun detectDuplicates (Lorg/gradle/api/file/FileCollection;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun detectDuplicates$default (Lorg/gradle/api/file/FileCollection;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+}
+
+public abstract interface class com/gradleup/gr8/EachEntryConfiguration {
+	public abstract fun changeContents (Ljava/io/InputStream;)V
+	public abstract fun getEntry ()Ljava/util/zip/ZipEntry;
+	public abstract fun inputStream ()Ljava/io/InputStream;
+	public abstract fun rename (Ljava/lang/String;)V
+	public abstract fun skip (Z)V
+}
+
+public final class com/gradleup/gr8/EachEntryConfiguration$DefaultImpls {
+	public static synthetic fun skip$default (Lcom/gradleup/gr8/EachEntryConfiguration;ZILjava/lang/Object;)V
+}
+
+public abstract interface class com/gradleup/gr8/EachFileConfiguration {
+	public abstract fun changeContents (Ljava/io/InputStream;)V
+	public abstract fun getFile ()Ljava/io/File;
+	public abstract fun rename (Ljava/lang/String;)V
+	public abstract fun skip (Z)V
+}
+
+public abstract class com/gradleup/gr8/EmbeddedJarTask : org/gradle/api/DefaultTask {
+	public fun <init> ()V
+	public final fun mainJar (Lorg/gradle/api/provider/Provider;)V
+	public final fun otherJars (Ljava/lang/Object;)V
+	public final fun outputJar ()Lorg/gradle/api/provider/Provider;
+	public final fun outputJar (Ljava/io/File;)V
+	public final fun taskAction ()V
+}
+
+public class com/gradleup/gr8/Gr8Configurator {
+	public fun <init> (Ljava/lang/String;Lorg/gradle/api/Project;Lorg/gradle/jvm/toolchain/JavaToolchainService;)V
+	public final fun archiveName (Ljava/lang/String;)V
+	public final fun classPathConfiguration (Ljava/lang/String;)V
+	public final fun configuration (Ljava/lang/String;)V
+	public final fun exclude (Ljava/lang/String;)V
+	public final fun programJar (Ljava/lang/Object;)V
+	public final fun programJar (Lorg/gradle/api/Task;)V
+	public final fun programJar (Lorg/gradle/api/tasks/TaskProvider;)V
+	public final fun proguardFile (Ljava/lang/Object;)V
+	public final fun proguardFiles ([Ljava/lang/Object;)V
+	public final fun stripGradleApi (Z)V
+	public final fun systemClassesToolchain (Lorg/gradle/api/Action;)V
+	public final fun systemClassesToolchain (Lorg/gradle/jvm/toolchain/JavaCompiler;)V
+}
+
+public abstract class com/gradleup/gr8/Gr8Extension {
+	public fun <init> (Lorg/gradle/api/Project;)V
+	public final fun addShadowedVariant (Ljava/lang/Object;)V
+	public final fun create (Ljava/lang/String;Lorg/gradle/api/Action;)Lorg/gradle/api/provider/Provider;
+	public static synthetic fun create$default (Lcom/gradleup/gr8/Gr8Extension;Ljava/lang/String;Lorg/gradle/api/Action;ILjava/lang/Object;)Lorg/gradle/api/provider/Provider;
+	protected abstract fun getJavaToolchainService ()Lorg/gradle/jvm/toolchain/JavaToolchainService;
+	public final fun removeGradleApiFromApi ()V
+	public final fun replaceOutgoingJar (Ljava/lang/Object;)V
+}
+
+public abstract class com/gradleup/gr8/Gr8Task : org/gradle/api/DefaultTask {
+	public fun <init> ()V
+	public final fun classPathFiles (Ljava/lang/Object;)V
+	protected abstract fun getJavaToolchainService ()Lorg/gradle/jvm/toolchain/JavaToolchainService;
+	public final fun javaLauncher (Lorg/gradle/jvm/toolchain/JavaCompiler;)V
+	public final fun mapping (Ljava/io/File;)V
+	public final fun outputJar ()Lorg/gradle/api/provider/Provider;
+	public final fun outputJar (Ljava/io/File;)V
+	public final fun programFiles (Ljava/lang/Object;)V
+	public final fun proguardConfigurationFiles (Ljava/lang/Object;)V
+	public final fun taskAction ()V
+	public final fun toolchain (Lorg/gradle/api/Action;)V
+}
+
+public abstract class com/gradleup/gr8/StripGradleApiTask : org/gradle/api/DefaultTask {
+	public static final field Companion Lcom/gradleup/gr8/StripGradleApiTask$Companion;
+	public fun <init> ()V
+	public final fun gradleApiJar (Ljava/io/File;)V
+	public final fun gradleApiJar (Lorg/gradle/api/file/FileCollection;)V
+	public final fun gradleApiJar (Lorg/gradle/api/file/RegularFileProperty;)V
+	public final fun strippedGradleApiJar ()Lorg/gradle/api/provider/Provider;
+	public final fun strippedGradleApiJar (Ljava/io/File;)V
+	public final fun strippedGradleApiJar (Lorg/gradle/api/file/RegularFileProperty;)V
+	public final fun taskAction ()V
+}
+
+public final class com/gradleup/gr8/StripGradleApiTask$Companion {
+	public final fun isGradleApi (Ljava/io/File;)Z
+}
+
+public abstract interface class com/gradleup/gr8/ZipConfiguration {
+	public abstract fun addDirectory (Ljava/io/File;Lkotlin/jvm/functions/Function1;)V
+	public abstract fun addFile (Ljava/io/File;Ljava/lang/String;)V
+	public abstract fun addZipFile (Ljava/io/File;Lkotlin/jvm/functions/Function1;)V
+	public abstract fun exclude (Ljava/lang/String;)V
+}
+
+public final class com/gradleup/gr8/ZipConfiguration$DefaultImpls {
+	public static synthetic fun addDirectory$default (Lcom/gradleup/gr8/ZipConfiguration;Ljava/io/File;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public static synthetic fun addFile$default (Lcom/gradleup/gr8/ZipConfiguration;Ljava/io/File;Ljava/lang/String;ILjava/lang/Object;)V
+	public static synthetic fun addZipFile$default (Lcom/gradleup/gr8/ZipConfiguration;Ljava/io/File;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+}
+
+public final class com/gradleup/gr8/ZipHelper {
+	public static final field INSTANCE Lcom/gradleup/gr8/ZipHelper;
+	public final fun buildZip (Ljava/io/File;Lkotlin/jvm/functions/Function1;)V
+	public final fun transformJar (Ljava/io/File;Ljava/io/File;Lkotlin/jvm/functions/Function2;)V
+	public final fun unzipFile (Ljava/io/File;Ljava/io/File;)V
+	public final fun zipFolder (Ljava/io/File;Ljava/io/File;)V
+}
+
+public final class com/gradleup/gr8/ZipHelperKt {
+	public static final fun copy (Ljava/util/zip/ZipEntry;Ljava/lang/String;Ljava/nio/file/attribute/FileTime;Ljava/nio/file/attribute/FileTime;Ljava/nio/file/attribute/FileTime;JJJI[BLjava/lang/String;)Ljava/util/zip/ZipEntry;
+	public static synthetic fun copy$default (Ljava/util/zip/ZipEntry;Ljava/lang/String;Ljava/nio/file/attribute/FileTime;Ljava/nio/file/attribute/FileTime;Ljava/nio/file/attribute/FileTime;JJJI[BLjava/lang/String;ILjava/lang/Object;)Ljava/util/zip/ZipEntry;
+}
+
