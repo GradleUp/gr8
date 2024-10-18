@@ -22,3 +22,5 @@
 -repackageclasses com.gradleup.gr8.relocated
 
 
+-keep class com.android.tools.r8.threading.providers.blocking.ThreadingModuleBlockingProvider { *; }
+-keep class com.android.tools.r8.threading.providers.singlethreaded.ThreadingModuleSingleThreadedProvider { *; }

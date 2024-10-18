@@ -1,0 +1,10 @@
+[libraries]
+gradle-api = "dev.gradleplugins:gradle-api:6.7"
+r8 = "com.android.tools:r8:8.5.35"
+librarian = "com.gradleup.librarian:librarian-gradle-plugin:0.0.6"
+gr8-published = "com.gradleup:gr8-plugin:0.10"
+gradle-publish = "com.gradle.publish:plugin-publish-plugin:0.15.0"
+kgp = "org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.20"
+vespene = "net.mbonnin.vespene:vespene-lib:0.6.1"
+
+[plugins]

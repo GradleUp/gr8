@@ -1,11 +1,12 @@
+import com.gradleup.librarian.gradle.librarianModule
+
 plugins {
-  id("gr8.build.common")
-  id("gr8.build.publishing")
+  id("org.jetbrains.kotlin.jvm")
   id("java-gradle-plugin")
 }
 
 dependencies {
-  implementation(project(":plugin-common")).excludeKotlinStdlib()
+  implementation(project(":gr8-plugin-common")).excludeKotlinStdlib()
 }
 
 fun Dependency?.excludeKotlinStdlib() {
@@ -16,12 +17,7 @@ fun Dependency?.excludeKotlinStdlib() {
   }
 }
 
-val name = "Gr8 Plugin External"
-val gr8Description = "The Gr8 Plugin packaged with external dependencies"
-
-gr8Publishing {
-  configurePublications(name, gr8Description)
-}
+librarianModule()
 
 gradlePlugin {
   plugins {
@@ -29,8 +25,8 @@ gradlePlugin {
       id = "com.gradleup.gr8.external"
       implementationClass = "com.gradleup.gr8.Gr8Plugin"
       // This is required by the Gradle publish plugin
-      displayName = name
-      description = gr8Description
+      displayName = "Gr8 Plugin External"
+      description = "The Gr8 Plugin packaged with external dependencies"
     }
   }
 }
