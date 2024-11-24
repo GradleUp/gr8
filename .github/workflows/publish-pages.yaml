@@ -16,9 +16,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@dbbdc275be76ac10734476cc723d82dfe7ec6eda #v3.4.2
       - run: |
           export JAVA_HOME=$JAVA_HOME_21_X64 # Remove when ubuntu-latest updates to Java 21
-          ./gradlew dokkatooGeneratePublicationHtml
-          mkdir -p build/static
-          cp -rf build/dokka/html build/static/kdoc
+          ./gradlew librarianStaticContent
 
       - uses: JamesIves/github-pages-deploy-action@94f3c658273cf92fb48ef99e5fbc02bd2dc642b2 #v4.6.3
         with:
