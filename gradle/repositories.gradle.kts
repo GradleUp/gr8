@@ -4,9 +4,7 @@ pluginManagement {
       mavenCentral()
       google()
       gradlePluginPortal()
-      maven {
-        url = uri("https://storage.googleapis.com/r8-releases/raw")
-      }
+      maven("https://storage.googleapis.com/gradleup/m2")
     }
   }
 }
