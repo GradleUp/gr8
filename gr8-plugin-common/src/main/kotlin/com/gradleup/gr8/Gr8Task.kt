@@ -19,7 +19,7 @@ import java.io.File
 import javax.inject.Inject
 
 @CacheableTask
-abstract class Gr8Task : DefaultTask() {
+abstract class Gr8Task : JavaExec() {
   @get:Classpath
   internal abstract val programFiles: ConfigurableFileCollection
 
@@ -40,82 +40,26 @@ abstract class Gr8Task : DefaultTask() {
   @get:Optional
   internal abstract val javaCompiler: Property<JavaCompiler>
 
-  @get:Inject
-  protected abstract val javaToolchainService: JavaToolchainService
+  override fun exec() {
+    val javaHome = javaCompiler.get().metadata.installationPath.asFile.absolutePath
 
-  fun programFiles(any: Any) {
-    programFiles.from(any)
-    programFiles.disallowChanges()
-  }
-
-  fun classPathFiles(any: Any) {
-    classPathFiles.from(any)
-    classPathFiles.disallowChanges()
-  }
-
-  fun outputJar(file: File) {
-    outputJar.set(file)
-    outputJar.disallowChanges()
-  }
-
-  fun mapping(file: File) {
-    mapping.set(file)
-    mapping.disallowChanges()
-  }
-
-  fun javaLauncher(launcher: JavaCompiler) {
-    javaCompiler.set(launcher)
-    javaCompiler.disallowChanges()
-  }
-
-  fun toolchain(spec: Action<JavaToolchainSpec>) {
-    javaCompiler.set(javaToolchainService.compilerFor(spec))
-    javaCompiler.disallowChanges()
-  }
-
-  fun outputJar(): Provider<RegularFile> = outputJar
-
-  fun proguardConfigurationFiles(any: Any) {
-    proguardConfigurationFiles.from(any)
-    proguardConfigurationFiles.disallowChanges()
-  }
-
-  private fun FileTree.paths(): List<String> {
-    return buildList {
-      visit(object : FileVisitor {
-        override fun visitDir(dirDetails: FileVisitDetails) {
-        }
-
-        override fun visitFile(fileDetails: FileVisitDetails) {
-          add(fileDetails.path)
-        }
-      })
+    args("--release")
+    args("--classfile")
+    args("--output")
+    args(outputJar.get().asFile.absolutePath)
+    args("--pg-map-output")
+    args(mapping.get().asFile.absolutePath)
+    proguardConfigurationFiles.forEach { file ->
+      args("--pg-conf")
+      args(file.absolutePath)
     }
-  }
+    args("--lib")
+    args(javaHome)
 
-  @TaskAction
-  fun taskAction() {
+    programFiles.forEach {
+      args(it.absolutePath)
+    }
 
-    val r8command = R8Command.builder()
-        .addProgramFiles(programFiles.files.map { it.toPath() })
-        .addClasspathFiles(classPathFiles.files.map { it.toPath() })
-        .setMode(CompilationMode.RELEASE)
-        .apply {
-          if (mapping.isPresent) {
-            setProguardMapOutputPath(mapping.get().asFile.toPath())
-          }
-        }
-        .apply {
-          if (javaCompiler.isPresent) {
-            val javaHome = javaCompiler.get().metadata.installationPath.asFile.toPath()
-            addLibraryResourceProvider(JdkClassFileProvider.fromJdkHome(javaHome))
-          } else {
-            addLibraryResourceProvider(JdkClassFileProvider.fromJdkHome(Jvm.current().javaHome.toPath()))
-          }
-        }
-        .setOutput(outputJar.asFile.get().toPath(), OutputMode.ClassFile)
-        .addProguardConfigurationFiles(proguardConfigurationFiles.files.map { it.toPath() })
-        .build()
-    R8.run(r8command)
+    super.exec()
   }
 }

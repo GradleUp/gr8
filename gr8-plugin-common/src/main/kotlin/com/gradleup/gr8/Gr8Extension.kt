@@ -10,8 +10,6 @@ import org.gradle.api.attributes.Usage
 import org.gradle.api.component.AdhocComponentWithVariants
 import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Provider
-import org.gradle.api.publish.PublishingExtension
-import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.jvm.toolchain.JavaToolchainService
 import javax.inject.Inject
 
@@ -39,18 +37,7 @@ abstract class Gr8Extension(
 
     val provider = configurator.registerTasks()
 
-    project.plugins.withId("maven-publish") {
-      project.extensions.findByType(PublishingExtension::class.java)?.apply {
-        publications.withType(MavenPublication::class.java).configureEach {
-          if (!it.name.lowercase().contains("marker")) {
-            it.artifact(provider.flatMap { it.mapping }) {
-              it.classifier = "mapping"
-            }
-          }
-        }
-      }
-    }
-    return provider.flatMap { it.outputJar() }
+    return provider.flatMap { it.outputJar }
   }
 
   /**
@@ -108,14 +95,9 @@ abstract class Gr8Extension(
   /**
    * Removes `gradleApi()` from the `api` configuration.
    *
-   * `gradleApi()` is added automatically by the `java-gradle-plugin` plugin but is generally not desired because:
-   * - the Gradle API version used to compile a plugin is different from the version used to run it (see https://github.com/gradle/gradle/issues/1835)
-   * - exposing Gradle API gives more work to R8 and has been seen failing due to issues like below
-   *
-   * ```
-   * org/gradle/internal/impldep/META-INF/versions/15/org/bouncycastle/jcajce/provider/asymmetric/edec/SignatureSpi$EdDSA.class:
-   * java.lang.IllegalArgumentException: Unsupported class file major version 59
-   * ```
+   * `gradleApi()` is automatically added as an `api` dependency by the `java-gradle-plugin` plugin but this is generally not desired because:
+   * - The Gradle API version used to compile a plugin may be different from the version used to run it (see https://github.com/gradle/gradle/issues/1835)
+   * - `compileOnly` is often a better choice as it doesn't leak the version to consumers. The version is determined by the Gradle version used at runtime.
    *
    * Note: there's no public API for determining whether a dependency is actually the `gradleApi()` dependency.
    * This method makes a best guess by removing all `FileCollectionDependency`. If you added `FileCollectionDependency`,
