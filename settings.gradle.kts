@@ -11,5 +11,5 @@ include(":gr8-plugin-common")
  * See https://issuetracker.google.com/u/2/issues/365578411
  */
 check(JavaVersion.current() <= JavaVersion.VERSION_17) {
-  "This project needs to be run with Java 17 or higher (found: ${JavaVersion.current()})."
+  "This project needs to be run with Java 17 or lower (found: ${JavaVersion.current()})."
 }

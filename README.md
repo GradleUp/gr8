@@ -8,16 +8,14 @@ Gr8 makes it easy to shadow, shrink, and minimize your jars.
 
 Gradle has a [very powerful plugin system](https://r8.googlesource.com/r8). Unfortunately, [Gradle handling of classpath/Classloaders](https://dev.to/autonomousapps/build-compile-run-a-crash-course-in-classpaths-f4g) for plugins has some serious limitations. For an example:
 
-* Gradle will always [force its bundled version of the Kotlin stdlib in the classpath](https://github.com/gradle/gradle/issues/16345). This makes it impossible to use Kotlin 1.5 APIs with Gradle 7.1 for an example because Gradle 7.1 uses Kotlin 1.4.
-* [`buildSrc` dependencies leak in the classpath](https://github.com/gradle/gradle/issues/8301). This causes [very weird bugs](https://github.com/apollographql/apollo-android/issues/2939) during execution because a conflicting dependency might be forced in the classpath. This happens espectially with popular libraries such as `okio` or `antlr`.
+* Gradle always [forces its bundled version of the Kotlin stdlib in the classpath](https://github.com/gradle/gradle/issues/16345). This makes it impossible to use Kotlin 1.5 APIs with Gradle 7.1 for an example because Gradle 7.1 uses Kotlin 1.4 (See [compatibility matrix](https://docs.gradle.org/current/userguide/compatibility.html) for other versions).
+* [`buildSrc` dependencies leak in the classpath](https://github.com/gradle/gradle/issues/8301). This causes [very weird bugs](https://github.com/apollographql/apollo-android/issues/2939) during execution because a conflicting dependency might be forced in the classpath. This happens especially with popular libraries such as `okio` or `antlr` that are likely to be used with conflicting versions by different plugins in your build.
 
-By shadowing and relocating the plugin dependencies, it is possible to ship a plugin and all its dependencies without having to worry about what Gradle is going to put on the classpath. 
+By shadowing (embedding and relocating) the plugin dependencies, it is possible to ship a plugin and all its dependencies without having to worry about what other dependencies are on the classpath, including the Kotlin stdlib.
 
-As a nice bonus, it makes plugins standalone so consumers of your plugin don't need to declare additional repositories. The `gr8` plugin for an example, uses `R8` from the [Google repo](https://maven.google.com/web/index.html) although it makes it available directly from the preconfigured [Gradle plugin portal](https://plugins.gradle.org/).
+To learn more, read the ["Use latest Kotlin in your Gradle plugins"](https://mbonnin.net/2021-11-12_use-latest-kotlin-in-your-gradle-plugins/) blog post.
 
 ## Usage
-
-To make a shadowed Gradle plugin:
 
 ```kotlin
 plugins {
@@ -26,8 +24,9 @@ plugins {
   id("com.gradleup.gr8").version("$gr8Version")
 }
 
-// Configuration dependencies that will be shadowed
-val shadeConfiguration = configurations.create("shade")
+
+// Configuration holding dependencies that are to be relocated
+val shadowedClasspath = configurations.create("shadowedClasspath")
 
 dependencies {
   // Using a redistributed version of Gradle instead of `gradleApi` provides more flexibility
@@ -36,22 +35,8 @@ dependencies {
 
   // Also set kotlin.stdlib.default.dependency=false in gradle.properties to avoid the 
   // plugin to add it to the "api" configuration
-  add("shade", "org.jetbrains.kotlin:kotlin-stdlib")
-  add("shade", "com.squareup.okhttp3:okhttp:4.9.0")
-}
-
-gr8 {
-  val shadowedJar = create("gr8") {
-    proguardFile("rules.pro")
-    configuration("shade")
-  }
-  // Replace the regular jar with the shadowed one in the publication
-  replaceOutgoingJar(shadowedJar)
-
-  // Removes the gradleApi dependency that java-gradle-plugin automatically adds
-  // Optional, but recommended when using a compileOnly dependency
-  // on dev.gradleplugins:gradle-api
-  removeGradleApiFromApi()
+  add(shadowedClasspath.name, "org.jetbrains.kotlin:kotlin-stdlib")
+  add(shadowedClasspath.name, "com.squareup.okhttp3:okhttp:4.9.0")
 }
 
 // Make the shadowed dependencies available during compilation/tests
@@ -62,9 +47,38 @@ configurations.named("testImplementation").configure {
   extendsFrom(shadeConfiguration)
 }
 
+gr8 {
+  val shadowedJar = create("gr8") {
+    proguardFile("rules.pro")
+    configuration("shadowedClasspath")
+
+    // Use a version from https://storage.googleapis.com/r8-releases/raw
+    // Requires a maven("https://storage.googleapis.com/r8-releases/raw") repository
+    r8Version = "8.8.19"
+    // Or use a commit
+    // The jar is downloaded on demand
+    r8Version = "887704078a06fc0090e7772c921a30602bf1a49f"
+    // Or leave it to the default version 
+  }
+
+  // Replace the regular jar with the shadowed one in the publication
+  replaceOutgoingJar(shadowedJar)
+
+  // Or if you prefer the shadowed jar to be a separate variant in the default publication
+  // The variant will have `org.gradle.dependency.bundling = shadowed`
+  addShadowedVariant(shadowedJar)
+
+  // Removes the gradleApi dependency that java-gradle-plugin automatically adds
+  // Optional, but recommended when using a compileOnly dependency
+  // on dev.gradleplugins:gradle-api
+  removeGradleApiFromApi()
+}
+
+
+
 ```
 
-Then customize your proguard rules. The below is the bare minimum. If you're using reflection, you might need more rules 
+Then customize your proguard rules. The below is a non-exhaustive example. If you're using reflection, you might need more rules 
 
 ```
 # The Gradle API jar isn't added to the classpath, ignore the missing symbols
@@ -140,12 +154,18 @@ gr8 {
 
 **Could I use the Gradle Worker API instead?** 
 
-Yes, the [Gradle Worker API](https://docs.gradle.org/current/userguide/worker_api.html) ensures proper plugin isolation. It only works for task actions and requires some setup so shadowing/relocating is a more universal solution.
+The [Gradle Worker API](https://docs.gradle.org/current/userguide/worker_api.html) has a [classLoaderIsolation mode](https://docs.gradle.org/current/kotlin-dsl/gradle/org.gradle.workers/-worker-executor/class-loader-isolation.html) that can be used to achieve a similar result with some limitations:
+* `gradle-api` and `kotlin-stdlib` are still in the worker classpath meaning you need to make sure your Kotlin version is compatible.
+* [classLoaderIsolation leaks memory](https://github.com/gradle/gradle/issues/18313)
+* Workers require serializing parameters and writing more boilerplate code.
 
 **Are there any drawbacks?**
 
-Yes. Because every plugin now relocates its own version of `kotlin-stdlib`, `okio` and other dependendancies, it means more work for the Classloaders and more Metaspace being used. There's a risk that builds will use more memory although it hasn't been a big issue so far.
+Yes. Because every plugin now relocates its own version of `kotlin-stdlib`, `okio` and other dependencies, it means more work for the Classloaders and more Metaspace being used. There's a risk that builds will use more memory, although it hasn't been a big issue so far.
 
-**What does this bring compared to using R8 directly in a `JavaExec` task?**
 
-Using R8 directly from a `JavaExec` works as well. GR8 adds a few extra things like the ability to filter out some files in the dependencies. This is useful for an example to remove the dependencies rules that are otherwise automatically imported by R8.  
+**Can I use Kotlin features in my plugin? (parameter names, extension functions, top level properties, etc...)
+
+It depends. If your plugin public API exposes Kotlin-only helper functions/symbols, you will need to keep `kotlin.Metadata` and `kotlin.Unit` and make sure your language version is compatible with the Gradle embedded version. This is so that Gradle doesn't error when trying to compile Kotlin build scripts.
+
+In general, I would recommend avoiding Kotlin-only features in your plugin API for better groovy/Java interoperability but if you really want to, it is possible. 

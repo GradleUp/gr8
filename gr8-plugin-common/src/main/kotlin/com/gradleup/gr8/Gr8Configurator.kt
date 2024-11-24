@@ -1,9 +1,12 @@
 package com.gradleup.gr8
 
-import com.gradleup.gr8.StripGradleApiTask.Companion.isGradleApi
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.file.ArchiveOperations
+import org.gradle.api.file.DuplicatesStrategy
+import org.gradle.api.file.RegularFile
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
@@ -11,48 +14,54 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.bundling.AbstractArchiveTask
 import org.gradle.api.tasks.bundling.Jar
+import org.gradle.api.tasks.bundling.Zip
 import org.gradle.jvm.toolchain.JavaCompiler
 import org.gradle.jvm.toolchain.JavaToolchainService
 import org.gradle.jvm.toolchain.JavaToolchainSpec
-import java.io.File
+import javax.inject.Inject
 
 open class Gr8Configurator(
     private val name: String,
     private val project: Project,
     private val javaToolchainService: JavaToolchainService,
 ) {
-  private var programJar: Property<Any> = project.objects.property(Any::class.java)
-  private var configuration: Property<String> = project.objects.property(String::class.java)
-  private var archiveName: Property<String> = project.objects.property(String::class.java)
-  private var classPathConfiguration: Property<String> = project.objects.property(String::class.java)
-  private var proguardFiles = mutableListOf<Any>()
-  private var stripGradleApi: Property<Boolean> = project.objects.property(Boolean::class.java)
-  private var excludes: ListProperty<String> = project.objects.listProperty(String::class.java)
+  private val programJar: RegularFileProperty = project.objects.fileProperty()
+
+  private val excludes: ListProperty<String> = project.objects.listProperty(String::class.java)
   private val javaCompiler: Property<JavaCompiler> = project.objects.property(JavaCompiler::class.java)
+  private val proguardFiles = project.objects.fileCollection()
+
+  val defaultR8Version = "8.5.35"
+  private var r8Version_: String = defaultR8Version
+  private var configuration: String? = null
+  private var classPathConfiguration: String? = null
 
   private val buildDir = project.layout.buildDirectory.dir("gr8/$name").get().asFile
+
 
   init {
     val javaExtension = project.extensions.findByType(JavaPluginExtension::class.java)
     if (javaExtension != null) {
       javaCompiler.convention(javaToolchainService.compilerFor(javaExtension.toolchain))
     }
+    excludes.convention(null as List<String>?)
+  }
+
+  fun r8Version(r8Version: String) {
+    r8Version_ = r8Version
   }
 
   /**
-   * The configuration to include in the resulting output jar.
+   * The configuration to shadow in the resulting output jar.
    */
   fun configuration(name: String) {
-    configuration.set(name)
-    configuration.disallowChanges()
+    configuration = name
   }
 
-  /**
-   * The configuration to include in the resulting output jar.
-   */
-  fun archiveName(name: String) {
-    archiveName.set(name)
-    archiveName.disallowChanges()
+
+  @Deprecated("Use `programJar(Provider<RegularFile>)` or `programJar(TaskProvider<Task>)`", level = DeprecationLevel.ERROR)
+  fun programJar(file: Any) {
+    TODO()
   }
 
   /**
@@ -63,13 +72,17 @@ open class Gr8Configurator(
    * @param file a file that will be evaluated like [Project.file]. If this file is created by another task, use a provider
    * so that the dependency between the task can be set up
    */
-  fun programJar(file: Any) {
-    programJar.set(file)
-    programJar.disallowChanges()
+  fun programJar(file: Provider<RegularFile>) {
+    this.programJar.set(file)
   }
 
   /**
-   * See [programJar]
+   * The jar file to include in the resulting output jar.
+   *
+   * Default: the jar produced by the "jar" task
+   *
+   * @param taskProvider a file that will be evaluated like [Project.file]. If this file is created by another task, use a provider
+   * so that the dependency between the task can be set up
    */
   fun programJar(taskProvider: TaskProvider<Task>) {
     programJar(
@@ -82,24 +95,12 @@ open class Gr8Configurator(
     )
   }
 
-  /**
-   * See [programJar]
-   */
-  fun programJar(task: Task) {
-    check(task is AbstractArchiveTask) {
-      "only AbstractArchiveTasks like Jar or Zip are supported"
-    }
-
-    programJar(task.archiveFile)
-  }
 
   /**
    * Adds additional jars on the classpath (but not in the output jar).
-   *
-   * Default: "compileOnly"
    */
   fun classPathConfiguration(name: String) {
-    classPathConfiguration.set(name)
+    classPathConfiguration = name
   }
 
   /**
@@ -108,29 +109,14 @@ open class Gr8Configurator(
    * @param file a file that will be evaluated like [Project.file]
    */
   fun proguardFile(file: Any) {
-    proguardFiles.add(file)
+    proguardFiles.from(file)
   }
 
   /**
-   * Adds the given file as a proguard-like configuration file
+   * Adds the given ANT pattern as an exclusion in the resulting jar.
    *
-   * @param file a file that will be evaluated like [Project.file]
+   * By default, MANIFEST.MF, proguard files and module-info.class are excluded
    */
-  fun proguardFiles(vararg file: Any) {
-    proguardFiles.addAll(file)
-  }
-
-  /**
-   * The gradle-api jar triggers errors in R8
-   *
-   * Class content provided for type descriptor org.gradle.internal.impldep.META-INF.versions.9.org.junit.platform.commons.util.ModuleUtils$ModuleReferenceScanner actually defines class org.gradle.internal.impldep.org.junit.platform.commons.util.ModuleUtils$ModuleReferenceScanner
-   *
-   * Setting stripGradleApi(true) will strip these classes
-   */
-  fun stripGradleApi(strip: Boolean) {
-    stripGradleApi.set(strip)
-  }
-
   fun exclude(exclude: String) {
     this.excludes.add(exclude)
   }
@@ -172,11 +158,9 @@ open class Gr8Configurator(
     this.javaCompiler.set(javaToolchainService.compilerFor(spec))
   }
 
-  private fun defaultProgramJar(): Provider<File> {
+  private fun defaultProgramJar(): Provider<RegularFile> {
     return project.tasks.named("jar").flatMap {
       (it as Jar).archiveFile
-    }.map {
-      it.asFile
     }
   }
 
@@ -192,49 +176,72 @@ open class Gr8Configurator(
      * - Call R8 to generate the final jar
      */
 
-    val configuration = project.configurations.getByName(configuration.orNull
-        ?: error("shadeConfiguration is mandatory"))
+    val configuration = project.configurations.getByName(configuration ?: error("Calling gr8 { configuration() } is required"))
 
-    val embeddedJarProvider = project.tasks.register("${name}EmbeddedJar", EmbeddedJarTask::class.java) { task ->
-      task.excludes.set(excludes)
-      task.mainJar(programJar.map { project.file(it) }.orElse(defaultProgramJar()))
-      task.otherJars(configuration)
-      task.outputJar(buildDir.resolve("embedded.jar"))
-    }
+    val embeddedJarProvider = project.tasks.register("embedJar", Zip::class.java) {
+      val archiveOperations = project.archiveOperations()
+      val objects = project.objects
 
-    val classPathFiles = project.files()
-    if (classPathConfiguration.isPresent) {
-      val stripGradleApi = stripGradleApi.getOrElse(false)
-
-      val classPathConfiguration = project.configurations.getByName(classPathConfiguration.get())
-      classPathFiles.from(classPathConfiguration.filter {
-        (!stripGradleApi || !it.isGradleApi()) && !it.name.endsWith(".pom")
+      it.from(configuration.elements.map { fileSystemLocations ->
+        objects.fileCollection().apply {
+          fileSystemLocations.forEach {
+            from(archiveOperations.zipTree(it.asFile))
+          }
+        }
       })
 
-      if (stripGradleApi) {
-        val stripGradleApiTask = project.tasks.register("${name}StripGradleApi", StripGradleApiTask::class.java) {
-          it.gradleApiJar(classPathConfiguration)
-          it.strippedGradleApiJar(buildDir.resolve("gradle-api-stripped.jar"))
-        }
-        classPathFiles.from(stripGradleApiTask.flatMap { it.strippedGradleApiJar() })
-      } else {
-        classPathFiles.from(classPathConfiguration.filter { it.isGradleApi() })
-      }
+      // The jar is mostly empty but this is needed for the plugin descriptor + module-info
+      it.from(programJar.orElse(defaultProgramJar()).map { archiveOperations.zipTree(it.asFile) })
+
+      /*
+       * Exclude libraries R8 rules, we'll add them ourselves
+       */
+      it.exclude(excludes.getOrElse(listOf("META-INF/MANIFEST.MF", "META-INF/**/*.pro", "module-info.class", "META-INF/versions/*/module-info.class")))
+
+      it.duplicatesStrategy = DuplicatesStrategy.WARN
+
+      it.destinationDirectory.set(buildDir)
+      it.archiveFileName.set("embedded.jar")
+    }
+
+    val gr8Configuration = project.configurations.create("gr8") {
+      it.isCanBeResolved = true
+    }
+    gr8Configuration.dependencies.add(project.dependencies.create("com.android.tools:r8:$defaultR8Version"))
+
+    val downloadR8 = project.tasks.register("downloadR8", DownloadR8Task::class.java) {
+      it.sha1.set(r8Version_)
+      it.outputFile.set(buildDir.resolve("r8/$r8Version_.jar"))
     }
 
     val r8TaskProvider = project.tasks.register("${name}R8Jar", Gr8Task::class.java) { task ->
-      task.programFiles(embeddedJarProvider.flatMap { it.outputJar() })
+      if (r8Version_.contains('.')) {
+        task.classpath(gr8Configuration)
+      } else {
+        task.classpath(downloadR8)
+      }
 
-      task.mapping(File(buildDir, "mapping.txt"))
-      task.classPathFiles(classPathFiles)
+      task.mainClass.set("com.android.tools.r8.R8")
 
-      val archiveName = archiveName.getOrElse("${project.name}-${project.version}-shadowed.jar")
-      task.outputJar(File(buildDir, archiveName))
-      task.proguardConfigurationFiles.from(proguardFiles.toTypedArray())
+      task.programFiles.from(embeddedJarProvider)
+
+      task.mapping.set(buildDir.resolve("mapping.txt"))
+      if (classPathConfiguration != null) {
+        task.classPathFiles.from(project.configurations.getByName(classPathConfiguration!!))
+      }
+
+      task.outputJar.set(buildDir.resolve("${project.name}-${project.version}-shadowed.jar"))
+      task.proguardConfigurationFiles.from(proguardFiles)
 
       task.javaCompiler.set(javaCompiler)
     }
 
     return r8TaskProvider
   }
+}
+
+internal abstract class Holder2 @Inject constructor(val operations: ArchiveOperations)
+
+private fun Project.archiveOperations(): ArchiveOperations {
+  return objects.newInstance(Holder2::class.java).operations
 }
