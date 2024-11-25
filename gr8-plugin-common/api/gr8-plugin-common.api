@@ -5,15 +5,30 @@ public abstract class com/gradleup/gr8/DownloadR8Task : org/gradle/api/DefaultTa
 	public final fun taskAction ()V
 }
 
+public abstract class com/gradleup/gr8/FilterTransform : org/gradle/api/artifacts/transform/TransformAction {
+	public static final field Companion Lcom/gradleup/gr8/FilterTransform$Companion;
+	public fun <init> ()V
+	public abstract fun getInputArtifact ()Lorg/gradle/api/provider/Provider;
+	public fun transform (Lorg/gradle/api/artifacts/transform/TransformOutputs;)V
+}
+
+public final class com/gradleup/gr8/FilterTransform$Companion {
+	public final fun getArtifactType ()Ljava/lang/String;
+}
+
+public abstract interface class com/gradleup/gr8/FilterTransform$Parameters : org/gradle/api/artifacts/transform/TransformParameters {
+	public abstract fun getExcludes ()Ljava/util/List;
+	public abstract fun setExcludes (Ljava/util/List;)V
+}
+
 public class com/gradleup/gr8/Gr8Configurator {
 	public fun <init> (Ljava/lang/String;Lorg/gradle/api/Project;Lorg/gradle/jvm/toolchain/JavaToolchainService;)V
+	public final fun addClassPathJarsFrom (Ljava/lang/Object;)V
+	public final fun addProgramJarsFrom (Ljava/lang/Object;)V
 	public final fun classPathConfiguration (Ljava/lang/String;)V
 	public final fun configuration (Ljava/lang/String;)V
 	public final fun exclude (Ljava/lang/String;)V
 	public final fun getDefaultR8Version ()Ljava/lang/String;
-	public final fun programJar (Ljava/lang/Object;)V
-	public final fun programJar (Lorg/gradle/api/provider/Provider;)V
-	public final fun programJar (Lorg/gradle/api/tasks/TaskProvider;)V
 	public final fun proguardFile (Ljava/lang/Object;)V
 	public final fun r8Version (Ljava/lang/String;)V
 	public final fun systemClassesToolchain (Lorg/gradle/api/Action;)V
