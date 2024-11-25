@@ -3,10 +3,10 @@
   <groupId>com.gradleup</groupId>
   <artifactId>com.gradleup.gr8.external.gradle.plugin</artifactId>
   <versioning>
-    <latest>0.10.1-SNAPSHOT</latest>
+    <latest>0.11.0-SNAPSHOT</latest>
     <versions>
-      <version>0.10.1-SNAPSHOT</version>
+      <version>0.11.0-SNAPSHOT</version>
     </versions>
-    <lastUpdated>20241125124018</lastUpdated>
+    <lastUpdated>20241125141911</lastUpdated>
   </versioning>
 </metadata>
