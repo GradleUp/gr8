@@ -137,6 +137,7 @@ val compileOnlyDependenciesForGr8: Configuration = configurations.create("compil
     attribute(Usage.USAGE_ATTRIBUTE, project.objects.named<Usage>(Usage.JAVA_API))
   }
 }
+compileOnlyDependenciesForGr8.extendsFrom(configurations.getByName("compileOnly"))
 
 gr8 {
   registerFilterTransform(listOf(".*/impldep/META-INF/versions/.*"))
