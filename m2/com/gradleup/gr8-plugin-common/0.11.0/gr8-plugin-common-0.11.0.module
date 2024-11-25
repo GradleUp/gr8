@@ -39,10 +39,10 @@
           "name": "gr8-plugin-common-0.11.0.jar",
           "url": "gr8-plugin-common-0.11.0.jar",
           "size": 34591,
-          "sha512": "68dd52a24d17d4aa2f2c56c0683220a49dd6ed4e788c39af1efb7d2f2a9e3209ca7ea7b6632d7d8e677188056d53695aefbcf0cbec2c6ce4e45b6b32fdade722",
-          "sha256": "de1de4344c75835f753e431adaef73be8c74d293190d3a72800cccd1b7a48297",
-          "sha1": "825431ef5aebffe0ede41c3e8ac6b8f079cf8c88",
-          "md5": "de86a8028676511f47b7571c236e1867"
+          "sha512": "89558b8d295d1c88f00c8bb7313af3ddc33fec48051e181285764a88e7064f4e7ff4fd6d2d6efb393490b635f1b87450a48efb197ea0100f95c29630d74f573e",
+          "sha256": "456be0640002cf53a648b9852986831d1aac0b0b83802f9121b43bc7a743314d",
+          "sha1": "55c8c5c5c2ac2553ac90f36059bdcee93a0ace93",
+          "md5": "dd58e46f62d7ff35b1b703e365d3aa94"
         }
       ]
     },
@@ -78,10 +78,10 @@
           "name": "gr8-plugin-common-0.11.0.jar",
           "url": "gr8-plugin-common-0.11.0.jar",
           "size": 34591,
-          "sha512": "68dd52a24d17d4aa2f2c56c0683220a49dd6ed4e788c39af1efb7d2f2a9e3209ca7ea7b6632d7d8e677188056d53695aefbcf0cbec2c6ce4e45b6b32fdade722",
-          "sha256": "de1de4344c75835f753e431adaef73be8c74d293190d3a72800cccd1b7a48297",
-          "sha1": "825431ef5aebffe0ede41c3e8ac6b8f079cf8c88",
-          "md5": "de86a8028676511f47b7571c236e1867"
+          "sha512": "89558b8d295d1c88f00c8bb7313af3ddc33fec48051e181285764a88e7064f4e7ff4fd6d2d6efb393490b635f1b87450a48efb197ea0100f95c29630d74f573e",
+          "sha256": "456be0640002cf53a648b9852986831d1aac0b0b83802f9121b43bc7a743314d",
+          "sha1": "55c8c5c5c2ac2553ac90f36059bdcee93a0ace93",
+          "md5": "dd58e46f62d7ff35b1b703e365d3aa94"
         }
       ]
     }
