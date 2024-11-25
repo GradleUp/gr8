@@ -100,7 +100,6 @@ dependencies {
   add(compileOnlyDependencies.name, gradleApi())
   // More dependencies here
 }
-compileOnlyDependenciesForGr8.extendsFrom(configurations.getByName("compileOnly"))
 
 if (shadow) {
   gr8 {
@@ -131,7 +130,6 @@ if (shadow) {
 } else {
   configurations.named("implementation").extendsFrom(shadowedDependencies)
 }
-
 ```
 
 ## Kotlin interop
