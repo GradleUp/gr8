@@ -1,6 +1,7 @@
 @file:Suppress("UnstableApiUsage")
 
-import com.gradleup.librarian.gradle.librarianModule
+import com.gradleup.gr8.FilterTransform
+import com.gradleup.librarian.gradle.Librarian
 
 plugins {
   id("org.jetbrains.kotlin.jvm")
@@ -8,51 +9,52 @@ plugins {
   id("com.gradleup.gr8")
 }
 
-val shadeConfiguration: Configuration = configurations.create("shade")
-val classpathConfiguration: Configuration = configurations.create("gr8Classpath")
-
-dependencies {
-  add("shade", project(":gr8-plugin-common")) {
-    // Because we only allow stripping the gradleApi from the classpath, we remove
-    exclude("dev.gradleplugins", "gradle-api")
-  }
-  compileOnly("dev.gradleplugins:gradle-api:6.7")
-  add("gr8Classpath", "dev.gradleplugins:gradle-api:6.7") {
-    exclude("org.apache.ant")
+val filteredClasspathDependencies: Configuration = configurations.create("filteredClasspathDependencies") {
+  attributes {
+    attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, FilterTransform.artifactType)
   }
 }
 
-configurations.getByName("compileOnly").extendsFrom(shadeConfiguration)
+filteredClasspathDependencies.extendsFrom(configurations.getByName("compileOnly"))
+
+
+dependencies {
+  implementation(project(":gr8-plugin-common"))
+  compileOnly("dev.gradleplugins:gradle-api:6.7") {
+    /**
+     * Classpath type already present: org.apache.tools.ant.IntrospectionHelper$4
+     */
+    exclude("org.apache.ant")
+  }
+
+  registerTransform(FilterTransform::class) {
+    from.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, "jar")
+    to.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, FilterTransform.artifactType)
+
+    parameters.excludes = listOf(".*/impldep/META-INF/versions/.*")
+  }
+}
+
+
 
 if (true) {
   gr8 {
-    val shadowedJar = create("plugin") {
-      configuration("shade")
-      proguardFile("rules.pro")
-      classPathConfiguration("gr8Classpath")
-      stripGradleApi(true)
+    removeGradleApiFromApi()
 
+    val shadowedJar = create("default") {
+      addProgramJarsFrom(configurations.getByName("runtimeClasspath"))
+      addProgramJarsFrom(tasks.getByName("jar"))
+      addClassPathJarsFrom(filteredClasspathDependencies)
+
+      proguardFile("rules.pro")
+
+      r8Version("887704078a06fc0090e7772c921a30602bf1a49f")
       systemClassesToolchain {
         languageVersion.set(JavaLanguageVersion.of(11))
       }
     }
 
-    // The java-gradle-plugin adds `gradleApi()` to the `api` implementation but it contains some JDK15 bytecode at
-    // org/gradle/internal/impldep/META-INF/versions/15/org/bouncycastle/jcajce/provider/asymmetric/edec/SignatureSpi$EdDSA.class:
-    // java.lang.IllegalArgumentException: Unsupported class file major version 59
-    // So remove it
-    val apiDependencies = project.configurations.getByName("api").dependencies
-    apiDependencies.firstOrNull {
-      it is FileCollectionDependency
-    }.let {
-      apiDependencies.remove(it)
-    }
-
     replaceOutgoingJar(shadowedJar)
-  }
-} else {
-  configurations.named("implementation").configure {
-    extendsFrom(shadeConfiguration)
   }
 }
 
@@ -68,4 +70,5 @@ gradlePlugin {
   }
 }
 
-librarianModule()
+Librarian.module(project)
+
