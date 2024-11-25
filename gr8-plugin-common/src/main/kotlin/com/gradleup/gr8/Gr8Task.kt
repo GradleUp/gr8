@@ -1,22 +1,10 @@
 package com.gradleup.gr8
 
-import com.android.tools.r8.CompilationMode
-import com.android.tools.r8.JdkClassFileProvider
-import com.android.tools.r8.OutputMode
-import com.android.tools.r8.R8
-import com.android.tools.r8.R8Command
-import org.gradle.api.Action
-import org.gradle.api.DefaultTask
-import org.gradle.api.file.*
+import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.provider.Property
-import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.*
-import org.gradle.internal.jvm.Jvm
 import org.gradle.jvm.toolchain.JavaCompiler
-import org.gradle.jvm.toolchain.JavaToolchainService
-import org.gradle.jvm.toolchain.JavaToolchainSpec
-import java.io.File
-import javax.inject.Inject
 
 @CacheableTask
 abstract class Gr8Task : JavaExec() {
