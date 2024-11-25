@@ -49,10 +49,17 @@ abstract class Gr8Task : JavaExec() {
     args(outputJar.get().asFile.absolutePath)
     args("--pg-map-output")
     args(mapping.get().asFile.absolutePath)
+
+    classPathFiles.forEach { file ->
+      args("--classpath")
+      args(file.absolutePath)
+    }
+
     proguardConfigurationFiles.forEach { file ->
       args("--pg-conf")
       args(file.absolutePath)
     }
+
     args("--lib")
     args(javaHome)
 
