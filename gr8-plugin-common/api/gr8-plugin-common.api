@@ -7,13 +7,13 @@ public abstract class com/gradleup/gr8/DownloadR8Task : org/gradle/api/DefaultTa
 
 public abstract class com/gradleup/gr8/FilterTransform : org/gradle/api/artifacts/transform/TransformAction {
 	public static final field Companion Lcom/gradleup/gr8/FilterTransform$Companion;
+	public static final field artifactType Ljava/lang/String;
 	public fun <init> ()V
 	public abstract fun getInputArtifact ()Lorg/gradle/api/provider/Provider;
 	public fun transform (Lorg/gradle/api/artifacts/transform/TransformOutputs;)V
 }
 
 public final class com/gradleup/gr8/FilterTransform$Companion {
-	public final fun getArtifactType ()Ljava/lang/String;
 }
 
 public abstract interface class com/gradleup/gr8/FilterTransform$Parameters : org/gradle/api/artifacts/transform/TransformParameters {
@@ -41,6 +41,8 @@ public abstract class com/gradleup/gr8/Gr8Extension {
 	public final fun create (Ljava/lang/String;Lorg/gradle/api/Action;)Lorg/gradle/api/provider/Provider;
 	public static synthetic fun create$default (Lcom/gradleup/gr8/Gr8Extension;Ljava/lang/String;Lorg/gradle/api/Action;ILjava/lang/Object;)Lorg/gradle/api/provider/Provider;
 	protected abstract fun getJavaToolchainService ()Lorg/gradle/jvm/toolchain/JavaToolchainService;
+	public final fun registerFilterTransform (Ljava/util/List;)V
+	public final fun registerFilterTransform (Ljava/util/List;Ljava/lang/String;)V
 	public final fun removeGradleApiFromApi ()V
 	public final fun replaceOutgoingJar (Ljava/lang/Object;)V
 }

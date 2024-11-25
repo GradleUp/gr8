@@ -45,6 +45,7 @@ abstract class FilterTransform: TransformAction<FilterTransform.Parameters> {
   }
 
   companion object {
+    @JvmField
     val artifactType = "filtered-jar"
   }
 }

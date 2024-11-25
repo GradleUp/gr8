@@ -7,6 +7,7 @@
 # Makes it easier to debug on MacOS case-insensitive filesystem when unzipping the jars
 -repackageclasses com.gradleup.gr8.relocated
 
+
 # We need to keep type arguments (Signature) for Gradle to be able to instantiate abstract models like `Property`
 # Else it fails with
 # 'Declaration of property alwaysGenerateTypesMatching does not include any type arguments in its property type interface org.gradle.api.provider.SetProperty'

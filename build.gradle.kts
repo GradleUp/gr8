@@ -7,6 +7,7 @@ buildscript {
 
   repositories {
     mavenCentral()
+    mavenLocal()
     gradlePluginPortal()
     google()
     maven("https://storage.googleapis.com/gradleup/m2")
