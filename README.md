@@ -19,38 +19,24 @@ To learn more, read the ["Use latest Kotlin in your Gradle plugins"](https://mbo
 
 ```kotlin
 plugins {
-  id("org.jetbrains.kotlin.jvm").version("$kotlinVersion")
+  id("org.jetbrains.kotlin.jvm").version("$latestKotlinVersion")
   id("java-gradle-plugin")
   id("com.gradleup.gr8").version("$gr8Version")
 }
 
-
-// Configuration holding dependencies that are to be relocated
-val shadowedClasspath = configurations.create("shadowedClasspath")
-
 dependencies {
-  // Using a redistributed version of Gradle instead of `gradleApi` provides more flexibility
-  // See https://github.com/gradle/gradle/issues/1835
-  compileOnly("dev.gradleplugins:gradle-api:7.1.1")
-
+  // Use latest Koltin stdlib version
   // Also set kotlin.stdlib.default.dependency=false in gradle.properties to avoid the 
   // plugin to add it to the "api" configuration
-  add(shadowedClasspath.name, "org.jetbrains.kotlin:kotlin-stdlib")
-  add(shadowedClasspath.name, "com.squareup.okhttp3:okhttp:4.9.0")
-}
-
-// Make the shadowed dependencies available during compilation/tests
-configurations.named("compileOnly").configure {
-  extendsFrom(shadeConfiguration)
-}
-configurations.named("testImplementation").configure {
-  extendsFrom(shadeConfiguration)
+  implementation("org.jetbrains.kotlin:kotlin-stdlib")
+  implementation("com.squareup.okhttp3:okhttp:4.9.0")
 }
 
 gr8 {
   val shadowedJar = create("gr8") {
+    addProgramJarsFrom(configurations.getByName("runtimeClasspath"))
+    addProgramJarsFrom(tasks.getByName("jar"))
     proguardFile("rules.pro")
-    configuration("shadowedClasspath")
 
     // Use a version from https://storage.googleapis.com/r8-releases/raw
     // Requires a maven("https://storage.googleapis.com/r8-releases/raw") repository
@@ -61,49 +47,33 @@ gr8 {
     // Or leave it to the default version 
   }
 
-  // Replace the regular jar with the shadowed one in the publication
+  // Optional: replace the regular jar with the shadowed one in the publication
   replaceOutgoingJar(shadowedJar)
 
   // Or if you prefer the shadowed jar to be a separate variant in the default publication
   // The variant will have `org.gradle.dependency.bundling = shadowed`
   addShadowedVariant(shadowedJar)
-
-  // Removes the gradleApi dependency that java-gradle-plugin automatically adds
-  // Optional, but recommended when using a compileOnly dependency
-  // on dev.gradleplugins:gradle-api
-  removeGradleApiFromApi()
 }
-
-
-
 ```
 
 Then customize your proguard rules. The below is a non-exhaustive example. If you're using reflection, you might need more rules 
 
 ```
-# The Gradle API jar isn't added to the classpath, ignore the missing symbols
--ignorewarnings
-# Allow to make some classes public so that we can repackage them without breaking package-private members
--allowaccessmodification
-
-# Keep kotlin metadata so that the Kotlin compiler knows about top level functions and other things
--keep class kotlin.Metadata { *; }
-
-# Keep FunctionX because they are used in the public API of Gradle/AGP/KGP
--keep class kotlin.jvm.functions.** { *; }
-
-# Keep Unit for kts compatibility, functions in a Gradle extension returning a relocated Unit won't work
--keep class kotlin.Unit
-
-# We need to keep type arguments (Signature) for Gradle to be able to instantiate abstract models like `Property`
--keepattributes Signature,Exceptions,*Annotation*,InnerClasses,PermittedSubclasses,EnclosingMethod,Deprecated,SourceFile,LineNumberTable
-
 # Keep your public API so that it's callable from scripts
 -keep class com.example.** { *; }
 
+# Repackage other classes
 -repackageclasses com.example.relocated
 
+# Allow to make some classes public so that we can repackage them without breaking package-private members
+-allowaccessmodification
+
+# We need to keep type arguments for Gradle to be able to instantiate abstract models like `Property`
+-keepattributes Signature,Exceptions,*Annotation*,InnerClasses,PermittedSubclasses,EnclosingMethod,Deprecated,SourceFile,LineNumberTable
 ```
+
+##  
+
 
 ## FAQ
 

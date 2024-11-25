@@ -23,7 +23,7 @@ abstract class FilterTransform: TransformAction<FilterTransform.Parameters> {
     val file = inputArtifact.get().asFile
     val regexes = parameters.excludes.map { Regex(it) }
     ZipInputStream(file.inputStream()).use { inputStream ->
-      ZipOutputStream(outputs.file("${file.nameWithoutExtension}-excluded.${file.extension}").outputStream()).use { outputStream ->
+      ZipOutputStream(outputs.file("${file.nameWithoutExtension}-filtered.${file.extension}").outputStream()).use { outputStream ->
         var entry: ZipEntry? = inputStream.nextEntry
         while (entry != null) {
           if (regexes.none { it.matches(entry!!.name) }) {

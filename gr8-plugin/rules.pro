@@ -1,7 +1,11 @@
-# Keep kotlin metadata so that the Kotlin compiler knows about top level functions
--keep class kotlin.Metadata { *; }
-# Keep Unit as it's in the signature of public methods:
--keep class kotlin.Unit { *; }
+# Keep our public API
+-keep class com.gradleup.** { *; }
+
+# Keep class names to make debugging easier
+-dontobfuscate
+
+# Makes it easier to debug on MacOS case-insensitive filesystem when unzipping the jars
+-repackageclasses com.gradleup.gr8.relocated
 
 # We need to keep type arguments (Signature) for Gradle to be able to instantiate abstract models like `Property`
 # Else it fails with
@@ -14,13 +18,5 @@
     public static **[] values();
 }
 
-# Keep everything com.gradleup.** as it's being used from Gradle
--keep class com.gradleup.** { *; }
-
-# Makes it easier to debug on MacOS case-insensitive filesystem when unzipping the jars
--dontusemixedcaseclassnames
--repackageclasses com.gradleup.gr8.relocated
-
-
--keep class com.android.tools.r8.threading.providers.blocking.ThreadingModuleBlockingProvider { *; }
--keep class com.android.tools.r8.threading.providers.singlethreaded.ThreadingModuleSingleThreadedProvider { *; }
+#-keep class com.android.tools.r8.threading.providers.blocking.ThreadingModuleBlockingProvider { *; }
+#-keep class com.android.tools.r8.threading.providers.singlethreaded.ThreadingModuleSingleThreadedProvider { *; }
