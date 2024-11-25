@@ -23,13 +23,6 @@ filteredClasspathDependencies.extendsFrom(configurations.getByName("compileOnly"
 dependencies {
   implementation(project(":gr8-plugin-common"))
   compileOnly("dev.gradleplugins:gradle-api:6.7")
-
-  registerTransform(FilterTransform::class) {
-    from.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, "jar")
-    to.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, FilterTransform.artifactType)
-
-    parameters.excludes = listOf(".*/impldep/META-INF/versions/.*")
-  }
 }
 
 if (true) {
@@ -45,6 +38,7 @@ if (true) {
       systemClassesToolchain {
         languageVersion.set(JavaLanguageVersion.of(11))
       }
+      registerFilterTransform(listOf(".*/impldep/META-INF/versions/.*"))
     }
 
     removeGradleApiFromApi()
