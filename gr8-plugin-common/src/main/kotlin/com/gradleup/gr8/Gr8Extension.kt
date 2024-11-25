@@ -3,6 +3,7 @@ package com.gradleup.gr8
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.artifacts.FileCollectionDependency
+import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.attributes.Bundling
 import org.gradle.api.attributes.Category
 import org.gradle.api.attributes.LibraryElements
@@ -109,6 +110,19 @@ abstract class Gr8Extension(
       it is FileCollectionDependency
     }.let {
       apiDependencies.remove(it)
+    }
+  }
+
+  fun registerFilterTransform(excludePatterns: List<String>) {
+    registerFilterTransform(excludePatterns, FilterTransform.artifactType)
+  }
+
+  fun registerFilterTransform(excludePatterns: List<String>, artifactType: String) {
+    project.dependencies.registerTransform(FilterTransform::class.java) {
+      it.from.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, "jar")
+      it.to.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, artifactType)
+
+      it.parameters.excludes = excludePatterns
     }
   }
 }

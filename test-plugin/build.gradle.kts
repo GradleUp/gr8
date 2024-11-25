@@ -1,52 +1,48 @@
-import com.gradleup.gr8.StripGradleApiTask.Companion.isGradleApi
-import org.gradle.api.attributes.Usage.JAVA_API
+import com.gradleup.gr8.FilterTransform
 import org.w3c.dom.Element
 
 plugins {
-  id("org.jetbrains.kotlin.jvm").version("1.5.21")
+  id("org.jetbrains.kotlin.jvm").version("2.0.21")
   id("maven-publish")
-  id("com.gradleup.gr8.external")
+  id("com.gradleup.gr8")
 }
 
-group = "com.gradleup.gr8"
+group = "com.gradleup.gr8.test"
 version = "0.1"
 
-// Test for https://github.com/GradleUp/gr8/issues/10
-val agpTest = configurations.detachedConfiguration(dependencies.create("com.android.tools.build:gradle-api:8.1.0-alpha10") {
-  isTransitive = false
-})
-val gradleTest = configurations.detachedConfiguration(dependencies.create("dev.gradleplugins:gradle-api:6.9") {
-  isTransitive = false
-})
-
-check(!agpTest.files.single().isGradleApi())
-check(gradleTest.files.single().isGradleApi())
-
 dependencies {
-  // Do not use gradleApi() as it forces Kotlin 1.4 on the classpath
   compileOnly("dev.gradleplugins:gradle-api:7.6")
-  
+  implementation("com.apollographql.apollo:apollo-runtime:4.1.0")
+
   testImplementation("dev.gradleplugins:gradle-test-kit:6.9")
   testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
 
-configurations.create("gr8ClassPath") {
-  extendsFrom(configurations.getByName("compileOnly"))
+val compileOnlyDependenciesForGr8: Configuration = configurations.create("compileOnlyDependenciesForGr8") {
   attributes {
-    attribute(Usage.USAGE_ATTRIBUTE, objects.named(JAVA_API))
+    attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, FilterTransform.artifactType)
+  }
+  attributes {
+    attribute(Usage.USAGE_ATTRIBUTE, project.objects.named<Usage>(Usage.JAVA_API))
   }
 }
 
-configure<com.gradleup.gr8.Gr8Extension> {
-  removeGradleApiFromApi()
+compileOnlyDependenciesForGr8.extendsFrom(configurations.getByName("compileOnly"))
 
-  val shadowedJar = create("gr8") {
+gr8 {
+  val shadowedJar = create("default") {
+    addProgramJarsFrom(configurations.getByName("runtimeClasspath"))
+    addProgramJarsFrom(tasks.getByName("jar"))
+    addClassPathJarsFrom(compileOnlyDependenciesForGr8)
+
     proguardFile("rules.pro")
-    configuration("runtimeClasspath")
-    classPathConfiguration("gr8ClassPath")
-    stripGradleApi(true)
-  }
 
+    r8Version("887704078a06fc0090e7772c921a30602bf1a49f")
+    systemClassesToolchain {
+      languageVersion.set(JavaLanguageVersion.of(11))
+    }
+  }
+  registerFilterTransform(listOf(".*/impldep/META-INF/versions/.*"))
   addShadowedVariant(shadowedJar)
 }
 
@@ -65,7 +61,7 @@ publishing {
   repositories {
     maven {
       name = "pluginTest"
-      url = uri("file://${rootProject.buildDir}/localMaven")
+      url = uri("file://${rootProject.layout.buildDirectory.asFile.get()}/localMaven")
     }
   }
 
@@ -78,7 +74,6 @@ publishing {
 
     /**
      * From https://github.com/gradle/gradle/blob/38930bc7f5891f3d2ca00d20ab0af22013c17f00/subprojects/plugin-development/src/main/java/org/gradle/plugin/devel/plugins/MavenPluginPublishPlugin.java#L85
-     *
      */
     this.pom.withXml {
       val root: Element = asElement()

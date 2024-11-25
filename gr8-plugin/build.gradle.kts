@@ -13,19 +13,16 @@ val filteredClasspathDependencies: Configuration = configurations.create("filter
   attributes {
     attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, FilterTransform.artifactType)
   }
+  attributes {
+    attribute(Usage.USAGE_ATTRIBUTE, project.objects.named<Usage>(Usage.JAVA_API))
+  }
 }
 
 filteredClasspathDependencies.extendsFrom(configurations.getByName("compileOnly"))
 
-
 dependencies {
   implementation(project(":gr8-plugin-common"))
-  compileOnly("dev.gradleplugins:gradle-api:6.7") {
-    /**
-     * Classpath type already present: org.apache.tools.ant.IntrospectionHelper$4
-     */
-    exclude("org.apache.ant")
-  }
+  compileOnly("dev.gradleplugins:gradle-api:6.7")
 
   registerTransform(FilterTransform::class) {
     from.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, "jar")
@@ -35,12 +32,8 @@ dependencies {
   }
 }
 
-
-
 if (true) {
   gr8 {
-    removeGradleApiFromApi()
-
     val shadowedJar = create("default") {
       addProgramJarsFrom(configurations.getByName("runtimeClasspath"))
       addProgramJarsFrom(tasks.getByName("jar"))
@@ -54,6 +47,7 @@ if (true) {
       }
     }
 
+    removeGradleApiFromApi()
     replaceOutgoingJar(shadowedJar)
   }
 }
@@ -71,4 +65,3 @@ gradlePlugin {
 }
 
 Librarian.module(project)
-

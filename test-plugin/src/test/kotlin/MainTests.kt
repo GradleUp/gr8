@@ -43,7 +43,6 @@ class MainTests {
         writeText(readText().replace("//", ""))
       }
     }
-
     assertEquals(TaskOutcome.SUCCESS, result!!.task(":dependencies")!!.outcome)
   }
 }

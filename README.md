@@ -1,4 +1,4 @@
-# Gr8 ![Gradle Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/com.gradleup.gr8)
+# Gr8 [![Maven Central](https://img.shields.io/maven-central/v/com.gradleup/gr8-plugin?style=flat-square)](https://central.sonatype.com/namespace/com.gradleup)
 
 Gr8 is [Gradle](https://gradle.org/) + [R8](https://r8.googlesource.com/r8). 
 
@@ -19,38 +19,38 @@ To learn more, read the ["Use latest Kotlin in your Gradle plugins"](https://mbo
 
 ```kotlin
 plugins {
-  id("org.jetbrains.kotlin.jvm").version("$kotlinVersion")
-  id("java-gradle-plugin")
+  id("org.jetbrains.kotlin.jvm").version("$latestKotlinVersion")
   id("com.gradleup.gr8").version("$gr8Version")
 }
 
-
-// Configuration holding dependencies that are to be relocated
-val shadowedClasspath = configurations.create("shadowedClasspath")
-
 dependencies {
-  // Using a redistributed version of Gradle instead of `gradleApi` provides more flexibility
-  // See https://github.com/gradle/gradle/issues/1835
-  compileOnly("dev.gradleplugins:gradle-api:7.1.1")
-
-  // Also set kotlin.stdlib.default.dependency=false in gradle.properties to avoid the 
-  // plugin to add it to the "api" configuration
-  add(shadowedClasspath.name, "org.jetbrains.kotlin:kotlin-stdlib")
-  add(shadowedClasspath.name, "com.squareup.okhttp3:okhttp:4.9.0")
+  implementation("com.squareup.okhttp3:okhttp:4.9.0")
+  // More dependencies here
 }
 
-// Make the shadowed dependencies available during compilation/tests
-configurations.named("compileOnly").configure {
-  extendsFrom(shadeConfiguration)
+/**
+ * Create a separate configuration to resolve compileOnly dependencies.
+ * You can skip this if you have no compileOnly dependencies. 
+ */
+val compileOnlyDependenciesForGr8: Configuration = configurations.create("compileOnlyDependenciesForGr8") {
+  /**
+   * Only get the jars needed for compilation, no need to resolve implementations
+   */
+  attributes {
+    attribute(Usage.USAGE_ATTRIBUTE, project.objects.named<Usage>(Usage.JAVA_API))
+  }
 }
-configurations.named("testImplementation").configure {
-  extendsFrom(shadeConfiguration)
-}
+compileOnlyDependenciesForGr8.extendsFrom(configurations.getByName("compileOnly"))
 
 gr8 {
   val shadowedJar = create("gr8") {
+    // program jars are included in the final shadowed jar
+    addProgramJarsFrom(configurations.getByName("runtimeClasspath"))
+    addProgramJarsFrom(tasks.getByName("jar"))
+    // classpath jars are only used by R8 for analysis but are not included in the
+    // final shadowed jar.
+    addClassPathJarsFrom(compileOnlyDependenciesForGr8)
     proguardFile("rules.pro")
-    configuration("shadowedClasspath")
 
     // Use a version from https://storage.googleapis.com/r8-releases/raw
     // Requires a maven("https://storage.googleapis.com/r8-releases/raw") repository
@@ -60,49 +60,119 @@ gr8 {
     r8Version("887704078a06fc0090e7772c921a30602bf1a49f")
     // Or leave it to the default version 
   }
-
-  // Replace the regular jar with the shadowed one in the publication
+  
+  // Optional: replace the regular jar with the shadowed one in the publication
   replaceOutgoingJar(shadowedJar)
 
   // Or if you prefer the shadowed jar to be a separate variant in the default publication
   // The variant will have `org.gradle.dependency.bundling = shadowed`
   addShadowedVariant(shadowedJar)
-
-  // Removes the gradleApi dependency that java-gradle-plugin automatically adds
-  // Optional, but recommended when using a compileOnly dependency
-  // on dev.gradleplugins:gradle-api
-  removeGradleApiFromApi()
 }
-
-
-
 ```
 
 Then customize your proguard rules. The below is a non-exhaustive example. If you're using reflection, you might need more rules 
 
 ```
-# The Gradle API jar isn't added to the classpath, ignore the missing symbols
--ignorewarnings
-# Allow to make some classes public so that we can repackage them without breaking package-private members
--allowaccessmodification
-
-# Keep kotlin metadata so that the Kotlin compiler knows about top level functions and other things
--keep class kotlin.Metadata { *; }
-
-# Keep FunctionX because they are used in the public API of Gradle/AGP/KGP
--keep class kotlin.jvm.functions.** { *; }
-
-# Keep Unit for kts compatibility, functions in a Gradle extension returning a relocated Unit won't work
--keep class kotlin.Unit
-
-# We need to keep type arguments (Signature) for Gradle to be able to instantiate abstract models like `Property`
--keepattributes Signature,Exceptions,*Annotation*,InnerClasses,PermittedSubclasses,EnclosingMethod,Deprecated,SourceFile,LineNumberTable
-
 # Keep your public API so that it's callable from scripts
 -keep class com.example.** { *; }
 
+# Repackage other classes
 -repackageclasses com.example.relocated
 
+# Allows more aggressive repackaging 
+-allowaccessmodification
+
+# We need to keep type arguments for Gradle to be able to instantiate abstract models like `Property`
+-keepattributes Signature,Exceptions,*Annotation*,InnerClasses,PermittedSubclasses,EnclosingMethod,Deprecated,SourceFile,LineNumberTable
+```
+
+## Using Gr8 for Gradle plugins
+
+
+The `java-gradle-plugin` automatically adds `api(gradleApi())` to your dependencies, exposing `gradleApi()` in your runtime classpath by default.
+
+`gradleApi()` must not be embedded in your shadowed plugin as those classes are provided by the Gradle instance running your plugin.
+
+What's more, contains `gradleApi()` newer symbols that might not be available in older versions of Gradle your plugin needs to support. 
+
+To workaround this, you can use the [Nokee relocated artifacts](https://docs.nokee.dev/manual/gradle-plugin-development-plugin.html) and `removeGradleApiFromApi()`:
+
+```kotlin
+dependencies {
+  compileOnly("dev.gradleplugins:gradle-api:7.6")
+}
+val compileOnlyDependenciesForGr8: Configuration = configurations.create("compileOnlyDependenciesForGr8") {
+  attributes {
+    attribute(Usage.USAGE_ATTRIBUTE, project.objects.named<Usage>(Usage.JAVA_API))
+  }
+}
+
+compileOnlyDependenciesForGr8.extendsFrom(configurations.getByName("compileOnly"))
+
+gr8 {
+  create("default") {
+    addClassPathJarsFrom(compileOnlyDependenciesForGr8)
+    // ...
+  }
+  removeGradleApiFromApi()
+}
+```
+
+At the time of writing [R8 doesn't support multi-release jars](https://issuetracker.google.com/u/1/issues/380805015) and you might bump into this issue:
+
+```
+Caused by: com.android.tools.r8.errors.CompilationError: Class content provided for type descriptor 
+org.gradle.internal.impldep.META-INF.versions.15.org.bouncycastle.jcajce.provider.asymmetric.edec.SignatureSpi 
+actually defines class org.gradle.internal.impldep.org.bouncycastle.jcajce.provider.asymmetric.edec.SignatureSpi
+```
+
+To workaround, Gr8 provides an artifact transform that can remove the multi-release classes. To do so, use `registerFilterTransform`:
+
+```kotlin
+val compileOnlyDependenciesForGr8: Configuration = configurations.create("compileOnlyDependenciesForGr8") {
+  attributes {
+    attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, FilterTransform.artifactType)
+  }
+  attributes {
+    attribute(Usage.USAGE_ATTRIBUTE, project.objects.named<Usage>(Usage.JAVA_API))
+  }
+}
+
+gr8 {
+  registerFilterTransform(listOf(".*/impldep/META-INF/versions/.*"))
+}
+```
+
+## Kotlin interop
+
+By default, R8 removes `kotlin.Metadata` from the shadowed jar. This means the Kotlin compiler only sees plain Java classes and symbols and Kotlin-only features such as parameters default values, extension function, etc... are lost.
+
+If you want to keep them, you need to keep `kotlin.Metadata` and `kotlin.Unit`:
+
+```
+# Keep kotlin metadata so that the Kotlin compiler knows about top level functions
+-keep class kotlin.Metadata { *; }
+# Keep Unit as it's in the signature of public methods:
+-keep class kotlin.Unit { *; }
+```
+
+> [!NOTE]
+> Stripping kotlin.Metadata acts as a compile-time verification that your API is usable in Groovy as it is in Kotlin and might be beneficial.
+
+## Java runtime version
+
+You can specify the version of the java runtime to use with `systemClassesToolchain`:
+
+```
+gr8 {
+  val shadowedJar = create("gr8") {
+    proguardFile("rules.pro")
+    addProgramJarsFrom(configurations.getByName("runtimeClasspath"))
+    systemClassesToolchain {
+      languageVersion.set(JavaLanguageVersion.of(11))
+    }
+  }
+}
 ```
 
 ## FAQ
@@ -113,7 +183,6 @@ The [Gradle Shadow Plugin](https://imperceptiblethoughts.com/shadow/) has been [
 
 ```kotlin
 project.extensions.getByName("kotlin")
-}
 ```
 
 will be transformed to:
@@ -126,32 +195,6 @@ For plugins that generate source code and contain a lot of package names, this m
 
 By using `R8` and [proguard rules](https://www.guardsquare.com/manual/configuration/usage), `Gr8` makes relocation more predictable and configurable.
 
-**Can I override the system classes used by `R8`, like target JDK 11 with my plugin while building on Java 17?**
-
-If you set your Java toolchain then R8 will also use the same toolchain to discover system classes:
-
-```
-java {
-  toolchain {
-    languageVersion.set(JavaLanguageVersion.of(11))
-  }
-}
-```
-
-If for some reason you want to override this explicitly:
-
-```
-gr8 {
-  val shadowedJar = create("gr8") {
-    proguardFile("rules.pro")
-    configuration("shade")
-    systemClassesToolchain {
-      languageVersion.set(JavaLanguageVersion.of(11))
-    }
-  }
-}
-```
-
 **Could I use the Gradle Worker API instead?** 
 
 The [Gradle Worker API](https://docs.gradle.org/current/userguide/worker_api.html) has a [classLoaderIsolation mode](https://docs.gradle.org/current/kotlin-dsl/gradle/org.gradle.workers/-worker-executor/class-loader-isolation.html) that can be used to achieve a similar result with some limitations:
@@ -163,9 +206,3 @@ The [Gradle Worker API](https://docs.gradle.org/current/userguide/worker_api.htm
 
 Yes. Because every plugin now relocates its own version of `kotlin-stdlib`, `okio` and other dependencies, it means more work for the Classloaders and more Metaspace being used. There's a risk that builds will use more memory, although it hasn't been a big issue so far.
 
-
-**Can I use Kotlin features in my plugin? (parameter names, extension functions, top level properties, etc...)
-
-It depends. If your plugin public API exposes Kotlin-only helper functions/symbols, you will need to keep `kotlin.Metadata` and `kotlin.Unit` and make sure your language version is compatible with the Gradle embedded version. This is so that Gradle doesn't error when trying to compile Kotlin build scripts.
-
-In general, I would recommend avoiding Kotlin-only features in your plugin API for better groovy/Java interoperability but if you really want to, it is possible. 
