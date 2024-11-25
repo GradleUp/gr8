@@ -6,7 +6,6 @@ plugins {
 
 dependencies {
   compileOnly(libs.gradle.api)
-  implementation(libs.r8)
 }
 
 Librarian.module(project)
