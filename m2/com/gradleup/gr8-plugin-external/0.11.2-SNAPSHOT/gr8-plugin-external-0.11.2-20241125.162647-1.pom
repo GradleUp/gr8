@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <!-- This module was also published with a richer model, Gradle metadata,  -->
+  <!-- which should be used instead. Do not delete the following line which  -->
+  <!-- is to indicate to Gradle or any Gradle module metadata file consumer  -->
+  <!-- that they should prefer consuming it instead. -->
+  <!-- do_not_remove: published-with-gradle-metadata -->
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.gradleup</groupId>
+  <artifactId>gr8-plugin-external</artifactId>
+  <version>0.11.2-SNAPSHOT</version>
+  <name>gr8-plugin-external</name>
+  <description>Gradle + R8 = &lt;3</description>
+  <url>https://github.com/GradleUp/gr8</url>
+  <licenses>
+    <license>
+      <name>MIT License</name>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>gr8 authors</id>
+      <name>gr8 authors</name>
+    </developer>
+  </developers>
+  <scm>
+    <connection>https://github.com/GradleUp/gr8</connection>
+    <developerConnection>https://github.com/GradleUp/gr8</developerConnection>
+    <url>https://github.com/GradleUp/gr8</url>
+  </scm>
+  <dependencies>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-stdlib-jdk8</artifactId>
+      <version>1.9.0</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.gradleup</groupId>
+      <artifactId>gr8-plugin-common</artifactId>
+      <version>0.11.2-SNAPSHOT</version>
+      <scope>runtime</scope>
+    </dependency>
+  </dependencies>
+</project>

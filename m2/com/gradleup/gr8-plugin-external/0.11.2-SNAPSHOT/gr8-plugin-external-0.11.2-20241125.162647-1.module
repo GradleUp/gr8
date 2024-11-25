@@ -1,0 +1,89 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.gradleup",
+    "module": "gr8-plugin-external",
+    "version": "0.11.2-SNAPSHOT",
+    "attributes": {
+      "org.gradle.status": "integration"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.10.2"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.environment": "standard-jvm",
+        "org.gradle.jvm.version": 8,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.9.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "gr8-plugin-external-0.11.2-SNAPSHOT.jar",
+          "url": "gr8-plugin-external-0.11.2-SNAPSHOT.jar",
+          "size": 2052,
+          "sha512": "b9b95b921b54b94a2aed834fec9ece8a5a52fd493b554a93d8c2dc3140518f732a87a1e26b49988612420d8a2a0427694d5551f7316cf109493a927796a7cab9",
+          "sha256": "edb910dd9f676132afc431995d7e9a658bb1b362b944055af1dbfbb420f08d9e",
+          "sha1": "a60f68da211dd970042943a88c4d2711cfdc7a30",
+          "md5": "02b111253aeecde8ff742eaaabc3fdf4"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.environment": "standard-jvm",
+        "org.gradle.jvm.version": 8,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "dependencies": [
+        {
+          "group": "com.gradleup",
+          "module": "gr8-plugin-common",
+          "version": {
+            "requires": "0.11.2-SNAPSHOT"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.9.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "gr8-plugin-external-0.11.2-SNAPSHOT.jar",
+          "url": "gr8-plugin-external-0.11.2-SNAPSHOT.jar",
+          "size": 2052,
+          "sha512": "b9b95b921b54b94a2aed834fec9ece8a5a52fd493b554a93d8c2dc3140518f732a87a1e26b49988612420d8a2a0427694d5551f7316cf109493a927796a7cab9",
+          "sha256": "edb910dd9f676132afc431995d7e9a658bb1b362b944055af1dbfbb420f08d9e",
+          "sha1": "a60f68da211dd970042943a88c4d2711cfdc7a30",
+          "md5": "02b111253aeecde8ff742eaaabc3fdf4"
+        }
+      ]
+    }
+  ]
+}
