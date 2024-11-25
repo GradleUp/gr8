@@ -1,4 +1,4 @@
-import com.gradleup.librarian.gradle.librarianModule
+import com.gradleup.librarian.gradle.Librarian
 
 plugins {
   id("org.jetbrains.kotlin.jvm")
@@ -17,7 +17,7 @@ fun Dependency?.excludeKotlinStdlib() {
   }
 }
 
-librarianModule()
+Librarian.module(project)
 
 gradlePlugin {
   plugins {

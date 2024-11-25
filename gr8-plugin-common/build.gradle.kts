@@ -1,4 +1,4 @@
-import com.gradleup.librarian.gradle.librarianModule
+import com.gradleup.librarian.gradle.Librarian
 
 plugins {
   id("org.jetbrains.kotlin.jvm")
@@ -9,5 +9,5 @@ dependencies {
   implementation(libs.r8)
 }
 
-librarianModule()
+Librarian.module(project)
 

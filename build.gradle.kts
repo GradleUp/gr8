@@ -1,4 +1,4 @@
-import com.gradleup.librarian.gradle.librarianRoot
+import com.gradleup.librarian.gradle.Librarian
 
 buildscript {
   dependencies {
@@ -13,4 +13,4 @@ buildscript {
   }
 }
 
-librarianRoot()
+Librarian.root(project)
