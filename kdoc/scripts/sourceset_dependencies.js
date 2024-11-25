@@ -1,0 +1,1 @@
+sourceset_dependencies = '{":gr8-plugin/main":[],":gr8-plugin-external/main":[],":gr8-plugin-common/main":[]}'

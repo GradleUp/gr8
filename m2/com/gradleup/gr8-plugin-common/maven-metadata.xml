@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>com.gradleup</groupId>
+  <artifactId>gr8-plugin-common</artifactId>
+  <versioning>
+    <latest>0.10.1-SNAPSHOT</latest>
+    <versions>
+      <version>0.10.1-SNAPSHOT</version>
+    </versions>
+    <lastUpdated>20241125123933</lastUpdated>
+  </versioning>
+</metadata>

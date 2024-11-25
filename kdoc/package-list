@@ -1,0 +1,9 @@
+$dokka.format:html-v1
+$dokka.linkExtension:html
+
+module:gr8-plugin
+com.gradleup.gr8
+module:gr8-plugin-common
+com.gradleup.gr8
+module:gr8-plugin-external
+com.gradleup.gr8
