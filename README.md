@@ -1,4 +1,4 @@
-# Gr8 ![Gradle Plugin Portal](https://img.shields.io/gradle-plugin-portal/v/com.gradleup.gr8)
+# Gr8 [![Maven Central](https://img.shields.io/maven-central/v/com.gradleup/gr8-plugin?style=flat-square)](https://central.sonatype.com/namespace/com.gradleup)
 
 Gr8 is [Gradle](https://gradle.org/) + [R8](https://r8.googlesource.com/r8). 
 
