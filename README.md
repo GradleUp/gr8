@@ -32,15 +32,8 @@ dependencies {
  * Create a separate configuration to resolve compileOnly dependencies.
  * You can skip this if you have no compileOnly dependencies. 
  */
-val compileOnlyDependenciesForGr8: Configuration = configurations.create("compileOnlyDependenciesForGr8") {
-  /**
-   * Only get the jars needed for compilation, no need to resolve implementations
-   */
-  attributes {
-    attribute(Usage.USAGE_ATTRIBUTE, project.objects.named<Usage>(Usage.JAVA_API))
-  }
-}
-compileOnlyDependenciesForGr8.extendsFrom(configurations.getByName("compileOnly"))
+val compileOnlyDependencies: Configuration = configurations.create("compileOnlyDependencies") 
+compileOnlyDependencies.extendsFrom(configurations.getByName("compileOnly"))
 
 gr8 {
   val shadowedJar = create("gr8") {
@@ -49,7 +42,7 @@ gr8 {
     addProgramJarsFrom(tasks.getByName("jar"))
     // classpath jars are only used by R8 for analysis but are not included in the
     // final shadowed jar.
-    addClassPathJarsFrom(compileOnlyDependenciesForGr8)
+    addClassPathJarsFrom(compileOnlyDependencies)
     proguardFile("rules.pro")
 
     // Use a version from https://storage.googleapis.com/r8-releases/raw
@@ -60,13 +53,6 @@ gr8 {
     r8Version("887704078a06fc0090e7772c921a30602bf1a49f")
     // Or leave it to the default version 
   }
-  
-  // Optional: replace the regular jar with the shadowed one in the publication
-  replaceOutgoingJar(shadowedJar)
-
-  // Or if you prefer the shadowed jar to be a separate variant in the default publication
-  // The variant will have `org.gradle.dependency.bundling = shadowed`
-  addShadowedVariant(shadowedJar)
 }
 ```
 
@@ -86,62 +72,66 @@ Then customize your proguard rules. The below is a non-exhaustive example. If yo
 -keepattributes Signature,Exceptions,*Annotation*,InnerClasses,PermittedSubclasses,EnclosingMethod,Deprecated,SourceFile,LineNumberTable
 ```
 
-## Using Gr8 for Gradle plugins
+## Using Gr8 for Gradle plugins 
 
+Using Gr8 to shadow dependencies in Gradle plugin is a typical use case but requires extra care because:
 
-The `java-gradle-plugin` automatically adds `api(gradleApi())` to your dependencies, exposing `gradleApi()` in your runtime classpath by default.
+* The `java-gradle-plugin` automatically adds `api(gradleApi())` to your dependencies but `gradleApi()` shouldn't be shadowed.
+* `gradleApi()` is a [multi-release jar](https://docs.oracle.com/javase/10/docs/specs/jar/jar.html#multi-release-jar-files) file that [R8 doesn't support](https://issuetracker.google.com/u/1/issues/380805015).
+* Since the plugins are published, the shadowed dependencies must not be exposed in the .pom/.module files.
 
-`gradleApi()` must not be embedded in your shadowed plugin as those classes are provided by the Gradle instance running your plugin.
-
-What's more, contains `gradleApi()` newer symbols that might not be available in older versions of Gradle your plugin needs to support. 
-
-To workaround this, you can use the [Nokee relocated artifacts](https://docs.nokee.dev/manual/gradle-plugin-development-plugin.html) and `removeGradleApiFromApi()`:
+To work around this, you can use, `removeGradleApiFromApi()`, `registerTransform()` and custom configurations:
 
 ```kotlin
-dependencies {
-  compileOnly("dev.gradleplugins:gradle-api:7.6")
-}
-val compileOnlyDependenciesForGr8: Configuration = configurations.create("compileOnlyDependenciesForGr8") {
+val shadowedDependencies = configurations.create("shadowedDependencies")
+
+val compileOnlyDependencies: Configuration = configurations.create("compileOnlyDependencies") {
   attributes {
     attribute(Usage.USAGE_ATTRIBUTE, project.objects.named<Usage>(Usage.JAVA_API))
   }
-}
-
-compileOnlyDependenciesForGr8.extendsFrom(configurations.getByName("compileOnly"))
-
-gr8 {
-  create("default") {
-    addClassPathJarsFrom(compileOnlyDependenciesForGr8)
-    // ...
-  }
-  removeGradleApiFromApi()
-}
-```
-
-At the time of writing [R8 doesn't support multi-release jars](https://issuetracker.google.com/u/1/issues/380805015) and you might bump into this issue:
-
-```
-Caused by: com.android.tools.r8.errors.CompilationError: Class content provided for type descriptor 
-org.gradle.internal.impldep.META-INF.versions.15.org.bouncycastle.jcajce.provider.asymmetric.edec.SignatureSpi 
-actually defines class org.gradle.internal.impldep.org.bouncycastle.jcajce.provider.asymmetric.edec.SignatureSpi
-```
-
-To workaround, Gr8 provides an artifact transform that can remove the multi-release classes. To do so, use `registerFilterTransform`:
-
-```kotlin
-val compileOnlyDependenciesForGr8: Configuration = configurations.create("compileOnlyDependenciesForGr8") {
   attributes {
     attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, FilterTransform.artifactType)
   }
-  attributes {
-    attribute(Usage.USAGE_ATTRIBUTE, project.objects.named<Usage>(Usage.JAVA_API))
-  }
+}
+compileOnlyDependencies.extendsFrom(configurations.getByName("compileOnly"))
+
+dependencies {
+  add(shadowedDependencies.name, "com.squareup.okhttp3:okhttp:4.9.0")
+  add(compileOnlyDependencies.name, gradleApi())
+  // More dependencies here
 }
 compileOnlyDependenciesForGr8.extendsFrom(configurations.getByName("compileOnly"))
 
-gr8 {
-  registerFilterTransform(listOf(".*/impldep/META-INF/versions/.*"))
+if (shadow) {
+  gr8 {
+    create("default") {
+      val shadowedJar = create("default") {
+        addProgramJarsFrom(shadowedDependencies)
+        addProgramJarsFrom(tasks.getByName("jar"))
+
+        proguardFile("rules.pro")
+        registerFilterTransform(listOf(".*/impldep/META-INF/versions/.*"))
+      }
+
+      removeGradleApiFromApi()
+      
+      // Optional: replace the regular jar with the shadowed one in the publication
+      replaceOutgoingJar(shadowedJar)
+
+      // Or if you prefer the shadowed jar to be a separate variant in the default publication
+      // The variant will have `org.gradle.dependency.bundling = shadowed`
+      addShadowedVariant(shadowedJar)
+
+      // Allow to compile the module without exposing the shadowedDependencies downstream
+      configurations.getByName("compileOnly").extendsFrom(shadowedDependencies)
+      configurations.getByName("compileOnly").extendsFrom(compileOnlyDependencies)
+      configurations.getByName("testImplementation").extendsFrom(shadowedDependencies)
+    }
+  }
+} else {
+  configurations.named("implementation").extendsFrom(shadowedDependencies)
 }
+
 ```
 
 ## Kotlin interop
