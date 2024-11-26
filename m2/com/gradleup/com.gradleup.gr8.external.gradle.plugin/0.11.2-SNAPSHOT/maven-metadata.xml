@@ -3,16 +3,16 @@
   <groupId>com.gradleup</groupId>
   <artifactId>com.gradleup.gr8.external.gradle.plugin</artifactId>
   <versioning>
-    <lastUpdated>20241125162647</lastUpdated>
+    <lastUpdated>20241126093652</lastUpdated>
     <snapshot>
-      <timestamp>20241125.162647</timestamp>
+      <timestamp>20241126.093652</timestamp>
       <buildNumber>1</buildNumber>
     </snapshot>
     <snapshotVersions>
       <snapshotVersion>
         <extension>pom</extension>
-        <value>0.11.2-20241125.162647-1</value>
-        <updated>20241125162647</updated>
+        <value>0.11.2-20241126.093652-1</value>
+        <updated>20241126093652</updated>
       </snapshotVersion>
     </snapshotVersions>
   </versioning>
