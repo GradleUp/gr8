@@ -15,6 +15,8 @@ By shadowing (embedding and relocating) the plugin dependencies, it is possible 
 
 To learn more, read the ["Use latest Kotlin in your Gradle plugins"](https://mbonnin.net/2021-11-12_use-latest-kotlin-in-your-gradle-plugins/) blog post.
 
+Gr8 is mostly focused at Gradle plugins but you can use it to relocate/shrink any library/binary. See [Shrinking a Kotlin binary by 99.2%](https://jakewharton.com/shrinking-a-kotlin-binary/ ) for a good illustration.
+
 ## Usage
 
 ```kotlin
