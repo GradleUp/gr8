@@ -59,3 +59,13 @@ gradlePlugin {
 }
 
 Librarian.module(project)
+
+// See https://github.com/GradleUp/librarian/issues/50
+afterEvaluate {
+  extensions.getByType<PublishingExtension>().publications.configureEach {
+    this as MavenPublication
+    if (name.lowercase().contains("marker")) {
+      this.groupId = "com.gradleup.gr8"
+    }
+  }
+}
