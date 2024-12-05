@@ -3,11 +3,10 @@
   <groupId>com.gradleup</groupId>
   <artifactId>gr8-plugin-common</artifactId>
   <versioning>
-    <latest>0.11.2</latest>
-    <release>0.11.2</release>
+    <latest>0.11.3-SNAPSHOT</latest>
     <versions>
-      <version>0.11.2</version>
+      <version>0.11.3-SNAPSHOT</version>
     </versions>
-    <lastUpdated>20241205170647</lastUpdated>
+    <lastUpdated>20241205170904</lastUpdated>
   </versioning>
 </metadata>
