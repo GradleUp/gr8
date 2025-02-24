@@ -91,6 +91,7 @@ val compileOnlyDependencies: Configuration = configurations.create("compileOnlyD
   attributes {
     attribute(Usage.USAGE_ATTRIBUTE, project.objects.named<Usage>(Usage.JAVA_API))
   }
+  // this attribute is needed to filter out some classes, see https://issuetracker.google.com/u/1/issues/380805015 
   attributes {
     attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, FilterTransform.artifactType)
   }
