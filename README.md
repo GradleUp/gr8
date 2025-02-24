@@ -114,6 +114,7 @@ if (shadow) {
         addClassPathJarsFrom(compileOnlyDependencies)
 
         proguardFile("rules.pro")
+        // See https://issuetracker.google.com/u/1/issues/380805015 for why this is required
         registerFilterTransform(listOf(".*/impldep/META-INF/versions/.*"))
       }
 
