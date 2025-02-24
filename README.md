@@ -115,6 +115,10 @@ if (shadow) {
         addClassPathJarsFrom(compileOnlyDependencies)
 
         proguardFile("rules.pro")
+
+        // for more information about the different options, refer to their matching R8 documentation
+        // at https://r8.googlesource.com/r8#running-r8
+
         // See https://issuetracker.google.com/u/1/issues/380805015 for why this is required
         registerFilterTransform(listOf(".*/impldep/META-INF/versions/.*"))
       }
