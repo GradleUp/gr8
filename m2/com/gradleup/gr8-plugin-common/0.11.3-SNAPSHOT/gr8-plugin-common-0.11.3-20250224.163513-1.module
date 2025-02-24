@@ -1,0 +1,82 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.gradleup",
+    "module": "gr8-plugin-common",
+    "version": "0.11.3-SNAPSHOT",
+    "attributes": {
+      "org.gradle.status": "integration"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.10.2"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.environment": "standard-jvm",
+        "org.gradle.jvm.version": 8,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.9.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "gr8-plugin-common-0.11.3-SNAPSHOT.jar",
+          "url": "gr8-plugin-common-0.11.3-SNAPSHOT.jar",
+          "size": 34589,
+          "sha512": "98836f6533b51998fcae1ae6561af35709c6b6384844afa12a8cb72a19bfc2d13397b241aa8eff58f03d33c2d96879f9b0125fbae5823faf25f1fbfd1f3638bb",
+          "sha256": "a046a599a80e3bdc7366b8d76044b1ee7e877cf516a1d06e9fb96343007b8338",
+          "sha1": "9731aab10d1baf9b425780c6d999cb82cd8100c4",
+          "md5": "6db3db74efe5720e9e1875451ec73ec4"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.environment": "standard-jvm",
+        "org.gradle.jvm.version": 8,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime",
+        "org.jetbrains.kotlin.platform.type": "jvm"
+      },
+      "dependencies": [
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib-jdk8",
+          "version": {
+            "requires": "1.9.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "gr8-plugin-common-0.11.3-SNAPSHOT.jar",
+          "url": "gr8-plugin-common-0.11.3-SNAPSHOT.jar",
+          "size": 34589,
+          "sha512": "98836f6533b51998fcae1ae6561af35709c6b6384844afa12a8cb72a19bfc2d13397b241aa8eff58f03d33c2d96879f9b0125fbae5823faf25f1fbfd1f3638bb",
+          "sha256": "a046a599a80e3bdc7366b8d76044b1ee7e877cf516a1d06e9fb96343007b8338",
+          "sha1": "9731aab10d1baf9b425780c6d999cb82cd8100c4",
+          "md5": "6db3db74efe5720e9e1875451ec73ec4"
+        }
+      ]
+    }
+  ]
+}
