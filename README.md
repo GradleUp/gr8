@@ -109,6 +109,9 @@ if (shadow) {
       val shadowedJar = create("default") {
         addProgramJarsFrom(shadowedDependencies)
         addProgramJarsFrom(tasks.getByName("jar"))
+        // classpath jars are only used by R8 for analysis but are not included in the
+        // final shadowed jar.
+        addClassPathJarsFrom(compileOnlyDependencies)
 
         proguardFile("rules.pro")
         registerFilterTransform(listOf(".*/impldep/META-INF/versions/.*"))
