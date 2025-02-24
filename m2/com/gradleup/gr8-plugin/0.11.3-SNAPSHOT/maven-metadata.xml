@@ -3,38 +3,38 @@
   <groupId>com.gradleup</groupId>
   <artifactId>gr8-plugin</artifactId>
   <versioning>
-    <lastUpdated>20250224155431</lastUpdated>
+    <lastUpdated>20250224161822</lastUpdated>
     <snapshot>
-      <timestamp>20250224.155431</timestamp>
+      <timestamp>20250224.161822</timestamp>
       <buildNumber>1</buildNumber>
     </snapshot>
     <snapshotVersions>
       <snapshotVersion>
         <extension>module</extension>
-        <value>0.11.3-20250224.155431-1</value>
-        <updated>20250224155431</updated>
-      </snapshotVersion>
-      <snapshotVersion>
-        <extension>jar</extension>
-        <value>0.11.3-20250224.155431-1</value>
-        <updated>20250224155431</updated>
+        <value>0.11.3-20250224.161822-1</value>
+        <updated>20250224161822</updated>
       </snapshotVersion>
       <snapshotVersion>
         <classifier>javadoc</classifier>
         <extension>jar</extension>
-        <value>0.11.3-20250224.155431-1</value>
-        <updated>20250224155431</updated>
+        <value>0.11.3-20250224.161822-1</value>
+        <updated>20250224161822</updated>
       </snapshotVersion>
       <snapshotVersion>
         <classifier>sources</classifier>
         <extension>jar</extension>
-        <value>0.11.3-20250224.155431-1</value>
-        <updated>20250224155431</updated>
+        <value>0.11.3-20250224.161822-1</value>
+        <updated>20250224161822</updated>
       </snapshotVersion>
       <snapshotVersion>
         <extension>pom</extension>
-        <value>0.11.3-20250224.155431-1</value>
-        <updated>20250224155431</updated>
+        <value>0.11.3-20250224.161822-1</value>
+        <updated>20250224161822</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <extension>jar</extension>
+        <value>0.11.3-20250224.161822-1</value>
+        <updated>20250224161822</updated>
       </snapshotVersion>
     </snapshotVersions>
   </versioning>
