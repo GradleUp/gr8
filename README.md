@@ -99,7 +99,7 @@ compileOnlyDependencies.extendsFrom(configurations.getByName("compileOnly"))
 
 dependencies {
   add(shadowedDependencies.name, "com.squareup.okhttp3:okhttp:4.9.0")
-  add(compileOnlyDependencies.name, gradleApi())
+  add("compileOnly", gradleApi())
   // More dependencies here
 }
 
@@ -109,6 +109,9 @@ if (shadow) {
       val shadowedJar = create("default") {
         addProgramJarsFrom(shadowedDependencies)
         addProgramJarsFrom(tasks.getByName("jar"))
+        // classpath jars are only used by R8 for analysis but are not included in the
+        // final shadowed jar.
+        addClassPathJarsFrom(compileOnlyDependencies)
 
         proguardFile("rules.pro")
         registerFilterTransform(listOf(".*/impldep/META-INF/versions/.*"))
@@ -125,12 +128,11 @@ if (shadow) {
 
       // Allow to compile the module without exposing the shadowedDependencies downstream
       configurations.getByName("compileOnly").extendsFrom(shadowedDependencies)
-      configurations.getByName("compileOnly").extendsFrom(compileOnlyDependencies)
       configurations.getByName("testImplementation").extendsFrom(shadowedDependencies)
     }
   }
 } else {
-  configurations.named("implementation").extendsFrom(shadowedDependencies)
+  configurations.getByName("implementation").extendsFrom(shadowedDependencies)
 }
 ```
 
