@@ -23,7 +23,7 @@ open class Gr8Configurator(
   private val proguardFiles = project.objects.fileCollection()
   private var classPathJars = project.objects.fileCollection()
 
-  val defaultR8Version = "8.5.35"
+  val defaultR8Version = "8.7.18"
 
   private var r8Version_: String = defaultR8Version
 
