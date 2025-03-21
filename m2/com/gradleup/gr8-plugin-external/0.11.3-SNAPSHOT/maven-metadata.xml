@@ -3,38 +3,38 @@
   <groupId>com.gradleup</groupId>
   <artifactId>gr8-plugin-external</artifactId>
   <versioning>
-    <lastUpdated>20250225090609</lastUpdated>
+    <lastUpdated>20250321142610</lastUpdated>
     <snapshot>
-      <timestamp>20250225.090609</timestamp>
+      <timestamp>20250321.142610</timestamp>
       <buildNumber>1</buildNumber>
     </snapshot>
     <snapshotVersions>
       <snapshotVersion>
-        <classifier>javadoc</classifier>
-        <extension>jar</extension>
-        <value>0.11.3-20250225.090609-1</value>
-        <updated>20250225090609</updated>
-      </snapshotVersion>
-      <snapshotVersion>
-        <extension>jar</extension>
-        <value>0.11.3-20250225.090609-1</value>
-        <updated>20250225090609</updated>
-      </snapshotVersion>
-      <snapshotVersion>
-        <extension>module</extension>
-        <value>0.11.3-20250225.090609-1</value>
-        <updated>20250225090609</updated>
-      </snapshotVersion>
-      <snapshotVersion>
         <classifier>sources</classifier>
         <extension>jar</extension>
-        <value>0.11.3-20250225.090609-1</value>
-        <updated>20250225090609</updated>
+        <value>0.11.3-20250321.142610-1</value>
+        <updated>20250321142610</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <classifier>javadoc</classifier>
+        <extension>jar</extension>
+        <value>0.11.3-20250321.142610-1</value>
+        <updated>20250321142610</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <extension>jar</extension>
+        <value>0.11.3-20250321.142610-1</value>
+        <updated>20250321142610</updated>
       </snapshotVersion>
       <snapshotVersion>
         <extension>pom</extension>
-        <value>0.11.3-20250225.090609-1</value>
-        <updated>20250225090609</updated>
+        <value>0.11.3-20250321.142610-1</value>
+        <updated>20250321142610</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <extension>module</extension>
+        <value>0.11.3-20250321.142610-1</value>
+        <updated>20250321142610</updated>
       </snapshotVersion>
     </snapshotVersions>
   </versioning>
