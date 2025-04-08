@@ -162,7 +162,7 @@ If you want to keep them, you need to keep `kotlin.Metadata` and `kotlin.Unit`:
 
 You can specify the version of the java runtime to use with `systemClassesToolchain`:
 
-```
+```kotlin
 gr8 {
   val shadowedJar = create("gr8") {
     proguardFile("rules.pro")
