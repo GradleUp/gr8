@@ -34,14 +34,15 @@ dependencies {
  * Create a separate configuration to resolve compileOnly dependencies.
  * You can skip this if you have no compileOnly dependencies. 
  */
-val compileOnlyDependencies: Configuration = configurations.create("compileOnlyDependencies") 
-compileOnlyDependencies.extendsFrom(configurations.getByName("compileOnly"))
+val compileOnlyDependencies by configurations.creating {
+  extendsFrom(configurations.compileOnly.get())
+}
 
 gr8 {
   val shadowedJar = create("gr8") {
     // program jars are included in the final shadowed jar
-    addProgramJarsFrom(configurations.getByName("runtimeClasspath"))
-    addProgramJarsFrom(tasks.getByName("jar"))
+    addProgramJarsFrom(configurations.runtimeClasspath.get())
+    addProgramJarsFrom(tasks.named<Jar>("jar"))
     // classpath jars are only used by R8 for analysis but are not included in the
     // final shadowed jar.
     addClassPathJarsFrom(compileOnlyDependencies)
@@ -85,22 +86,22 @@ Using Gr8 to shadow dependencies in Gradle plugin is a typical use case but requ
 To work around this, you can use, `removeGradleApiFromApi()`, `registerTransform()` and custom configurations:
 
 ```kotlin
-val shadowedDependencies = configurations.create("shadowedDependencies")
+val shadowedDependencies by configurations.creating
 
-val compileOnlyDependencies: Configuration = configurations.create("compileOnlyDependencies") {
+val compileOnlyDependencies by configurations.creating {
   attributes {
     attribute(Usage.USAGE_ATTRIBUTE, project.objects.named<Usage>(Usage.JAVA_API))
-  }
-  // this attribute is needed to filter out some classes, see https://issuetracker.google.com/u/1/issues/380805015 
-  attributes {
+
+    // this attribute is needed to filter out some classes, see https://issuetracker.google.com/u/1/issues/380805015 
     attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, FilterTransform.artifactType)
   }
+
+  extendsFrom(configurationscompileOnly.get())
 }
-compileOnlyDependencies.extendsFrom(configurations.getByName("compileOnly"))
 
 dependencies {
-  add(shadowedDependencies.name, "com.squareup.okhttp3:okhttp:4.9.0")
-  add("compileOnly", gradleApi())
+  shadowedDependencies("com.squareup.okhttp3:okhttp:4.9.0")
+  compileOnly(gradleApi())
   // More dependencies here
 }
 
@@ -108,7 +109,7 @@ if (shadow) {
   gr8 {
     val shadowedJar = create("default") {
       addProgramJarsFrom(shadowedDependencies)
-      addProgramJarsFrom(tasks.getByName("jar"))
+      addProgramJarsFrom(tasks.named<Jar>("jar"))
       // classpath jars are only used by R8 for analysis but are not included in the
       // final shadowed jar.
       addClassPathJarsFrom(compileOnlyDependencies)
@@ -132,11 +133,11 @@ if (shadow) {
     addShadowedVariant(shadowedJar)
 
     // Allow to compile the module without exposing the shadowedDependencies downstream
-    configurations.getByName("compileOnly").extendsFrom(shadowedDependencies)
-    configurations.getByName("testImplementation").extendsFrom(shadowedDependencies)
+    configurations.compileOnly.get().extendsFrom(shadowedDependencies)
+    configurations.testImplementation.get().extendsFrom(shadowedDependencies)
   }
 } else {
-  configurations.getByName("implementation").extendsFrom(shadowedDependencies)
+  configurations.implementation.get().extendsFrom(shadowedDependencies)
 }
 ```
 
@@ -164,9 +165,9 @@ You can specify the version of the java runtime to use with `systemClassesToolch
 gr8 {
   val shadowedJar = create("gr8") {
     proguardFile("rules.pro")
-    addProgramJarsFrom(configurations.getByName("runtimeClasspath"))
+    addProgramJarsFrom(configurations.runtimeClasspath)
     systemClassesToolchain {
-      languageVersion.set(JavaLanguageVersion.of(11))
+      languageVersion = JavaLanguageVersion.of(11)
     }
   }
 }
