@@ -21,8 +21,6 @@ dependencies {
 val compileOnlyDependenciesForGr8: Configuration = configurations.create("compileOnlyDependenciesForGr8") {
   attributes {
     attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, FilterTransform.artifactType)
-  }
-  attributes {
     attribute(Usage.USAGE_ATTRIBUTE, project.objects.named<Usage>(Usage.JAVA_API))
   }
 }

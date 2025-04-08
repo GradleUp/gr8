@@ -12,8 +12,6 @@ plugins {
 val filteredClasspathDependencies: Configuration = configurations.create("filteredClasspathDependencies") {
   attributes {
     attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, FilterTransform.artifactType)
-  }
-  attributes {
     attribute(Usage.USAGE_ATTRIBUTE, project.objects.named<Usage>(Usage.JAVA_API))
   }
 }

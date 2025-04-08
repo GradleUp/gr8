@@ -90,9 +90,8 @@ val shadowedDependencies = configurations.create("shadowedDependencies")
 val compileOnlyDependencies: Configuration = configurations.create("compileOnlyDependencies") {
   attributes {
     attribute(Usage.USAGE_ATTRIBUTE, project.objects.named<Usage>(Usage.JAVA_API))
-  }
-  // this attribute is needed to filter out some classes, see https://issuetracker.google.com/u/1/issues/380805015 
-  attributes {
+
+    // this attribute is needed to filter out some classes, see https://issuetracker.google.com/u/1/issues/380805015 
     attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, FilterTransform.artifactType)
   }
 }
