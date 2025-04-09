@@ -90,9 +90,8 @@ val shadowedDependencies = configurations.create("shadowedDependencies")
 val compileOnlyDependencies: Configuration = configurations.create("compileOnlyDependencies") {
   attributes {
     attribute(Usage.USAGE_ATTRIBUTE, project.objects.named<Usage>(Usage.JAVA_API))
-  }
-  // this attribute is needed to filter out some classes, see https://issuetracker.google.com/u/1/issues/380805015 
-  attributes {
+
+    // this attribute is needed to filter out some classes, see https://issuetracker.google.com/u/1/issues/380805015 
     attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, FilterTransform.artifactType)
   }
 }
@@ -106,36 +105,34 @@ dependencies {
 
 if (shadow) {
   gr8 {
-    create("default") {
-      val shadowedJar = create("default") {
-        addProgramJarsFrom(shadowedDependencies)
-        addProgramJarsFrom(tasks.getByName("jar"))
-        // classpath jars are only used by R8 for analysis but are not included in the
-        // final shadowed jar.
-        addClassPathJarsFrom(compileOnlyDependencies)
+    val shadowedJar = create("default") {
+      addProgramJarsFrom(shadowedDependencies)
+      addProgramJarsFrom(tasks.getByName("jar"))
+      // classpath jars are only used by R8 for analysis but are not included in the
+      // final shadowed jar.
+      addClassPathJarsFrom(compileOnlyDependencies)
 
-        proguardFile("rules.pro")
+      proguardFile("rules.pro")
 
-        // for more information about the different options, refer to their matching R8 documentation
-        // at https://r8.googlesource.com/r8#running-r8
+      // for more information about the different options, refer to their matching R8 documentation
+      // at https://r8.googlesource.com/r8#running-r8
 
-        // See https://issuetracker.google.com/u/1/issues/380805015 for why this is required
-        registerFilterTransform(listOf(".*/impldep/META-INF/versions/.*"))
-      }
-
-      removeGradleApiFromApi()
-      
-      // Optional: replace the regular jar with the shadowed one in the publication
-      replaceOutgoingJar(shadowedJar)
-
-      // Or if you prefer the shadowed jar to be a separate variant in the default publication
-      // The variant will have `org.gradle.dependency.bundling = shadowed`
-      addShadowedVariant(shadowedJar)
-
-      // Allow to compile the module without exposing the shadowedDependencies downstream
-      configurations.getByName("compileOnly").extendsFrom(shadowedDependencies)
-      configurations.getByName("testImplementation").extendsFrom(shadowedDependencies)
+      // See https://issuetracker.google.com/u/1/issues/380805015 for why this is required
+      registerFilterTransform(listOf(".*/impldep/META-INF/versions/.*"))
     }
+
+    removeGradleApiFromApi()
+    
+    // Optional: replace the regular jar with the shadowed one in the publication
+    replaceOutgoingJar(shadowedJar)
+
+    // Or if you prefer the shadowed jar to be a separate variant in the default publication
+    // The variant will have `org.gradle.dependency.bundling = shadowed`
+    addShadowedVariant(shadowedJar)
+
+    // Allow to compile the module without exposing the shadowedDependencies downstream
+    configurations.getByName("compileOnly").extendsFrom(shadowedDependencies)
+    configurations.getByName("testImplementation").extendsFrom(shadowedDependencies)
   }
 } else {
   configurations.getByName("implementation").extendsFrom(shadowedDependencies)
@@ -162,7 +159,7 @@ If you want to keep them, you need to keep `kotlin.Metadata` and `kotlin.Unit`:
 
 You can specify the version of the java runtime to use with `systemClassesToolchain`:
 
-```
+```kotlin
 gr8 {
   val shadowedJar = create("gr8") {
     proguardFile("rules.pro")
