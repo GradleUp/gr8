@@ -25,7 +25,7 @@ open class Gr8Configurator(
 
   val defaultR8Version = "8.7.18"
 
-  private var r8Version_: String = defaultR8Version
+  private var r8Version_: String? = null
 
   private val buildDir = project.layout.buildDirectory.dir("gr8/$name").get().asFile
 
@@ -129,22 +129,31 @@ open class Gr8Configurator(
   internal fun registerTasks(): TaskProvider<Gr8Task> {
     val upperCaseName = name.replaceFirstChar { it.uppercase() }
 
-    val gr8Configuration = project.configurations.create("gr8$upperCaseName") {
-      it.isCanBeResolved = true
+    val r8Version = r8Version_ ?: defaultR8Version
+    val classpath = if (r8Version.contains('.')) {
+      /**
+       * If the version contains a '.', we're going to assume it is present in the Google maven repo and
+       * use proper Gradle dependency management.
+       */
+      val gr8Configuration = project.configurations.create("gr8$upperCaseName") {
+        it.isCanBeResolved = true
+      }
+      gr8Configuration.dependencies.add(project.dependencies.create("com.android.tools:r8:$r8Version"))
+      gr8Configuration
+    } else {
+      /**
+       * If the version doesn't contain a '.', it's probably a git sha that is not present in the Google maven
+       * repo. In that case, we download it from the GCP bucket directly.
+       */
+      project.tasks.register("gr8${upperCaseName}Download", DownloadR8Task::class.java) {
+        it.sha1.set(r8Version)
+        it.outputFile.set(buildDir.resolve("r8/$r8Version.jar"))
+      }
     }
-    gr8Configuration.dependencies.add(project.dependencies.create("com.android.tools:r8:$defaultR8Version"))
 
-    val downloadR8 = project.tasks.register("gr8${upperCaseName}Download", DownloadR8Task::class.java) {
-      it.sha1.set(r8Version_)
-      it.outputFile.set(buildDir.resolve("r8/$r8Version_.jar"))
-    }
 
     val r8TaskProvider = project.tasks.register("gr8${upperCaseName}ShadowedJar", Gr8Task::class.java) { task ->
-      if (r8Version_.contains('.')) {
-        task.classpath(gr8Configuration)
-      } else {
-        task.classpath(downloadR8)
-      }
+      task.classpath(classpath)
 
       task.mainClass.set("com.android.tools.r8.R8")
 
