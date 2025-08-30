@@ -175,7 +175,7 @@ gr8 {
 
 **Could I use the Shadow plugin instead?**
 
-The [Gradle Shadow Plugin](https://imperceptiblethoughts.com/shadow/) has been [helping plugin authors](https://www.alecstrong.com/posts/shading/) for years and is a very stable solution. Unfortunately, it doesn't allow very granular configuration and [might relocate constant strings that shouldn't be](https://github.com/johnrengelman/shadow/issues/232). In practice, any plugin that tries to read the `"kotlin"` extension is subject to having its behaviour changed:
+The [Gradle Shadow Plugin](https://gradleup.com/shadow/) has been [helping plugin authors](https://www.alecstrong.com/posts/shading/) for years and is a very stable solution. Unfortunately, it doesn't allow very granular configuration and [might relocate constant strings that shouldn't be](https://github.com/johnrengelman/shadow/issues/232). In practice, any plugin that tries to read the `"kotlin"` extension is subject to having its behaviour changed:
 
 ```kotlin
 project.extensions.getByName("kotlin")
