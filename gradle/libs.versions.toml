@@ -1,7 +1,7 @@
 [libraries]
 gradle-api = "dev.gradleplugins:gradle-api:7.3" # for ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE
-librarian = "com.gradleup.librarian:librarian-gradle-plugin:0.0.8-SNAPSHOT-ba3e33fb6601dae9ea75e1ef75aa9b46bf640b74"
-gr8-published = "com.gradleup:gr8-plugin:0.11.0-SNAPSHOT-ac9451b86ec13bc59a090a38585fa20b88eb072e"
+librarian = "com.gradleup.librarian:librarian-gradle-plugin:0.0.8"
+gr8-published = "com.gradleup:gr8-plugin:0.11.0"
 gradle-publish = "com.gradle.publish:plugin-publish-plugin:0.15.0"
 kgp = "org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.20"
 vespene = "net.mbonnin.vespene:vespene-lib:0.6.1"

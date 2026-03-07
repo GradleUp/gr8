@@ -147,7 +147,9 @@ open class Gr8Configurator(
        */
       project.tasks.register("gr8${upperCaseName}Download", DownloadR8Task::class.java) {
         it.sha1.set(r8Version)
-        it.outputFile.set(buildDir.resolve("r8/$r8Version.jar"))
+        it.outputDir.set(buildDir.resolve("r8"))
+      }.map {
+        it.outputDir.get().asFile.listFiles()?.singleOrNull() ?: throw IllegalStateException("Expected single R8 jar file in output directory")
       }
     }
 
