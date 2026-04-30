@@ -35,7 +35,7 @@ gr8 {
 
     proguardFile("rules.pro")
 
-    r8Version("887704078a06fc0090e7772c921a30602bf1a49f")
+    r8Version("97951e94471814d3148bfb1ff0a4617f1781a1fe")
     systemClassesToolchain {
       languageVersion.set(JavaLanguageVersion.of(11))
     }
